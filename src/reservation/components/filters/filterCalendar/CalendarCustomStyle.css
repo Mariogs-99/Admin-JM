@@ -1,0 +1,10 @@
+.p-inputtext {
+    border-radius: 0.5rem;
+    border-color: #E4A545;
+    /* background-color: #fae18e; */
+}
+
+.p-inputtext:hover {
+    
+    /* border-color: #0b353b; */
+}

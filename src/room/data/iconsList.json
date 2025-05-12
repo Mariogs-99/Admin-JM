@@ -1,0 +1,75 @@
+[
+    {
+      "name": "capacity",
+      "path": "../../assets/icons/personIcon.png"
+    },
+    {
+      "name": "bed",
+      "path": "../../assets/icons/bed.png"
+    },
+    {
+      "name": "available",
+      "path": "../../assets/icons/available.png"
+    },
+    {
+      "name": "air",
+      "path": "../../assets/icons/air.png"
+    },
+    {
+      "name": "size",
+      "path": "../../assets/icons/size.png"
+    },
+    {
+      "name": "pool2",
+      "path": "../../assets/icons/pool2.png"
+    },
+    {
+      "name": "foodIcon",
+      "path": "../../assets/icons/foodIcon.png"
+    },
+    {
+      "name": "garden",
+      "path": "../../assets/icons/Garden.png"
+    },
+    {
+      "name": "balcony",
+      "path": "../../assets/icons/balcony.png"
+    },
+    {
+      "name": "bath",
+      "path": "../../assets/icons/bath.png"
+    },
+    {
+      "name": "cleaning",
+      "path": "../../assets/icons/cleaning.png"
+    },
+    {
+      "name": "tables",
+      "path": "../../assets/icons/tables.png"
+    },
+    {
+      "name": "tv",
+      "path": "../../assets/icons/tv.png"
+    },
+    {
+      "name": "wifi",
+      "path": "../../assets/icons/wifi.png"
+    },
+    {
+      "name": "personalCleaning",
+      "path": "../../assets/icons/personal-cleaning.png"
+    },
+    {
+      "name": "iron",
+      "path": "../../assets/icons/iron.png"
+    },
+    {
+      "name": "closet",
+      "path": "../../assets/icons/closet.png"
+    },
+    {
+      "name": "desktop",
+      "path": "../../assets/icons/desk.png"
+    }
+  ]
+  

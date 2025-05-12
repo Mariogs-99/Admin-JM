@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+body {
+  font-family: 'Inter', 'sans-serif';
+  color:#4A2713;
+}
+
+.ant-layout {
+  background-color: #fff;
+}
+
+.ant-layout-sider-children, .ant-menu{ 
+  background-color: #202531;
+  font-family: 'Inter', 'sans-serif';
+}
+
+.ant-menu-item {
+  margin-top: 5% !important;
+  color: #7a7a7a !important;
+}
+
+.ant-menu-item-selected {
+  background-color: #363e52 !important;
+  color: #ffffff !important;  
+}
+
+.ant-menu-item-selected >.ant-menu-title-content >p{
+  color: #fff !important;  
+}
+
+.ant-layout-sider-trigger {
+  background-color: #303030!important;
+}
+
+.ant-menu-title-content {
+  padding-left: 2%;
+}
+
+/*------------------ Primer react -----------------*/
+.p-tabview-panels {
+  background-color: transparent;
+}
+
+.p-tabview-nav {
+  background-color: transparent;
+}
+
+.p-tabview-selected{
+  color: var(--color-primary);
+}
+
+.p-tabview-nav a:hover{
+  border-color: #a1d5ff!important;
+}
+
+.p-tabview-selected a{
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.p-tabview-nav a{
+  color: var(--color-primary);
+}
+
+.p-tabview-nav {
+  display: flex;
+  justify-content: center;
+}
+
+.p-datatable-table {
+  border: 1px #D7D7D9 solid;
+  font-family: 'Merriweather','sans-serif';
+  font-size: 0.8rem;
+}
+
+.p-datatable-thead tr th{
+  background-color: #5A4437!important ;
+  border: 1px #5A4437 solid;
+  color: white;
+}
+
+/* ------------------------------------------------ */
+@theme {
+  --font-primary: "Merriweather", "sans-serif";
+  --font-title: "Inter", "sans-serif";
+  --color-border: #D9D9D9;
+  --color-primary: #2E4F54;
+  --color-primary-light:#363e52;
+  --color-secondary:#DEBB46;
+  --color-primary-button: #1F8498;
+  --color-primary-button-hover: #2B9AB0;
+  --color-primary-button-Active: #3A8D9D;
+  --color-title:#363e52;
+}

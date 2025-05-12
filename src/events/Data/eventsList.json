@@ -1,0 +1,12 @@
+[
+    {
+        "title": "Piscina",
+        "description": "Nuestra piscina, un refugio de frescura rodeado de un entorno sereno. Relájate bajo el sol mientras disfrutas de un chapuzón refrescante o simplemente déjate llevar por el ambiente relajado.",
+        "img": "https://hotel-jardin-de-las-marias.vercel.app/assets/pool-5A39HaDa.jpeg"
+    },
+    {
+        "title": "Meeting",
+        "description": "Ofrecemos un elegante y moderno salón de reuniones, ideal para conferencias, presentaciones, capacitaciones y eventos privados. Nuestro espacio ha sido diseñado para brindar comodidad, funcionalidad y tecnología de vanguardia, garantizando el éxito de cualquier evento.",
+        "img": "https://hotel-jardin-de-las-marias.vercel.app/assets/meetingroom-B0JFeDh1.jpeg"
+    }
+]

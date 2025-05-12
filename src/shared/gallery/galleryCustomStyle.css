@@ -1,0 +1,20 @@
+.ant-upload-list-item-container {
+    height: 30vh !important;
+    width: 30vh !important;
+}
+
+.ant-upload-list-item-thumbnail > img {
+    object-fit: cover !important;
+}
+
+.ant-upload.ant-upload-select {
+    height: 30vh !important;
+    width: 30vh !important;
+    background-color: #D9D9D9 !important;
+}
+
+.ant-upload-wrapper {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
