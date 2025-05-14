@@ -23,25 +23,57 @@ export const GetRooms = async (): Promise<Room[]> => {
     }
 }
 
-export const createRoom = async (body: Room): Promise<void> => {
-    try {
-        await axios.post<Room>(
-            `${BASE_URL}/api/room/`,
-            body,
-            {
-                headers: {
-                    Authorization: `Bearer ${getToken()}`, // Agrega el token en los headers
-                    "Content-Type": "application/json", // Asegura el tipo de contenido
-                },
-            }
-        )
-        return
-    }
-    catch (error) {
-        console.error(error); // Manejo de errores adecuado
-    }
-}
+export const SaveRoom = async (body: Room): Promise<void> => {
+  try {
+    await axios.post(`${BASE_URL}/api/room/`, body, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("Error al guardar habitación:", error);
+    throw error;
+  }
+};
 
+
+export const UpdateRoom = async (id: number, body: Room): Promise<void> => {
+  try {
+    await axios.put(`${BASE_URL}/api/room/${id}`, body, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("Error al actualizar habitación:", error);
+    throw error;
+  }
+};
+
+export const DeleteRoom = async (id: number): Promise<void> => {
+  try {
+    await axios.delete(`${BASE_URL}/api/room/${id}`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("Error al eliminar habitación:", error);
+    throw error;
+  }
+};
+
+
+
+
+
+
+
+
+//!---------------------------------ROOMS IMAGE------------------------------------------------
 export const getImagesId = async (id: number) => {
     try {
       const response = await axios.get(
