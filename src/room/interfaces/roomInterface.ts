@@ -3,7 +3,13 @@ export interface CategoryRoom {
     nameCategoryEs: string,
     nameCategoryEn: string,
     descriptionEs: string,
-    descriptionEn: string
+    descriptionEn: string,
+    maxPeople?: number;
+    bedInfo?: string;
+    roomSize?: string;
+    hasTv?: boolean;
+    hasAc?: boolean;
+    hasPrivateBathroom?: boolean;
 }
 
 export interface Room {

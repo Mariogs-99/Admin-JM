@@ -42,3 +42,44 @@ export const getAllCategoriesRoom = async():Promise<CategoryRoom[]> => {
         throw new Error("Error al obtener categorias"); // Manejo de errores adecuado
     }
 }
+
+
+//! Nuevos Servicios para el apartado de categorias
+export const createCategoryRoom = async (data: Partial<CategoryRoom>) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/api/category-room/`, data, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error("Error al crear la categoría");
+  }
+};
+
+export const updateCategoryRoom = async (id: number, data: Partial<CategoryRoom>) => {
+  try {
+    const response = await axios.put(`${BASE_URL}/api/category-room/${id}`, data, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error("Error al actualizar la categoría");
+  }
+};
+
+export const deleteCategoryRoom = async (id: number) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}/api/category-room/${id}`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error("Error al eliminar la categoría");
+  }
+};

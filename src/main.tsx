@@ -12,6 +12,7 @@ import { RoomFormPage } from './room/pages/roomFormPage.tsx'
 import { LoginPages } from './login/pages/loginPages.tsx'
 import { ReservationPage } from './reservation/pages/reservationPage.tsx'
 import { Bounce, ToastContainer } from 'react-toastify'
+import { CategoryPage } from './category/pages/categoryPage.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -39,6 +40,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path='eventos' element={<EventPage />} />
           <Route path='experiencias' element={<ExperiencesPage />} />
           <Route path='restaurante' element={<RestaurantPage />} />
+           <Route path='Categorias' element={<CategoryPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

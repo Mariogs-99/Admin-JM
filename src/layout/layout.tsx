@@ -25,9 +25,10 @@ const menuItems: MenuItem[] = [
     { key: '1', icon: <PiBuildingThin size={20} />, label: 'Hotel', url: 'hotel' },
     { key: '2', icon: <PiBookBookmarkLight size={20} />, label: 'Reservaciones', url: 'reservaciones' },
     { key: '3', icon: <PiBedLight size={20} />, label: 'Habitaciones', url: 'habitaciones' },
-    { key: '4', icon: <PiCalendarBlankLight size={20} />, label: 'Eventos', url: 'eventos' },
-    { key: '5', icon: <PiChampagneLight size={20} />, label: 'Experiencias', url: 'experiencias' },
-    { key: '6', icon: <PiBowlSteamLight size={20} />, label: 'Restaurante', url: 'restaurante' },
+    { key: '4', icon: <PiBowlSteamLight size={20} />, label: 'Categorias', url: 'categorias' },
+    { key: '5', icon: <PiCalendarBlankLight size={20} />, label: 'Eventos', url: 'eventos' },
+    { key: '6', icon: <PiChampagneLight size={20} />, label: 'Experiencias', url: 'experiencias' },
+    { key: '7', icon: <PiBowlSteamLight size={20} />, label: 'Restaurante', url: 'restaurante' },
 ];
 
 const App: React.FC = () => {
