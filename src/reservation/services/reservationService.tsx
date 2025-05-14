@@ -14,29 +14,51 @@ export const GetReservations = async (): Promise<Reservation[]> => {
                     "Content-Type": "application/json",
                 },
             }
-        )
-        return response.data
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error("Error al obtener reservas");
     }
-    catch (error) {
-        throw new Error("Error al iniciar sesión"); // Manejo de errores adecuado
-    }
-}
+};
 
 export const SaveReservations = async (body: Reservation): Promise<void> => {
     try {
-        await axios.post<Reservation>(
-            `${BASE_URL}/api/reservation/`,
-            body,
-            {
-                headers: {
-                    Authorization: `Bearer ${getToken()}`, // Agrega el token en los headers
-                    "Content-Type": "application/json", // Asegura el tipo de contenido
-                },
-            }
-        )
-        return
+        await axios.post(`${BASE_URL}/api/reservation/`, body, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+                "Content-Type": "application/json",
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
-    catch (error) {
-        console.error(error); // Manejo de errores adecuado
+};
+
+export const UpdateReservation = async (id: number, body: Reservation): Promise<void> => {
+    try {
+        await axios.put(`${BASE_URL}/api/reservation/${id}`, body, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+                "Content-Type": "application/json",
+            },
+        });
+    } catch (error) {
+        console.error("Error al actualizar la reserva:", error);
+        throw error;
     }
-}
+};
+
+export const deleteReservation = async (id: number): Promise<void> => {
+    try {
+        await axios.delete(`${BASE_URL}/api/reservation/${id}`, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+                "Content-Type": "application/json",
+            },
+        });
+    } catch (error) {
+        console.error("Error al eliminar la reserva:", error);
+        throw error;
+    }
+};
