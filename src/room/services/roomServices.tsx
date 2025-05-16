@@ -23,12 +23,11 @@ export const GetRooms = async (): Promise<Room[]> => {
     }
 }
 
-export const SaveRoom = async (body: Room): Promise<void> => {
+export const SaveRoom = async (formData: FormData): Promise<void> => {
   try {
-    await axios.post(`${BASE_URL}/api/room/`, body, {
+    await axios.post(`${BASE_URL}/api/room/with-image`, formData, {
       headers: {
         Authorization: `Bearer ${getToken()}`,
-        "Content-Type": "application/json",
       },
     });
   } catch (error) {
@@ -38,19 +37,20 @@ export const SaveRoom = async (body: Room): Promise<void> => {
 };
 
 
-export const UpdateRoom = async (id: number, body: Room): Promise<void> => {
+
+export const UpdateRoomWithImage = async (id: number, formData: FormData): Promise<void> => {
   try {
-    await axios.put(`${BASE_URL}/api/room/${id}`, body, {
+    await axios.put(`${BASE_URL}/api/room/with-image/${id}`, formData, {
       headers: {
         Authorization: `Bearer ${getToken()}`,
-        "Content-Type": "application/json",
       },
     });
   } catch (error) {
-    console.error("Error al actualizar habitación:", error);
+    console.error("Error al actualizar habitación con imagen:", error);
     throw error;
   }
 };
+
 
 export const DeleteRoom = async (id: number): Promise<void> => {
   try {

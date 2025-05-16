@@ -10,9 +10,11 @@ import {
   Row,
   Col,
   Button,
+  Upload,
 } from "antd";
 import { getAllCategoriesRoom } from "../../category/services/categoryService";
-import { SaveRoom, UpdateRoom } from "../services/roomServices";
+import { SaveRoom,UpdateRoomWithImage } from "../services/roomServices";
+import { UploadOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -50,24 +52,42 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
     }
   }, [initialData, visible]);
 
-  const handleFinish = async (values: any) => {
-    setLoading(true);
-    try {
-      if (initialData?.roomId) {
-        await UpdateRoom(initialData.roomId, values);
-        message.success("Habitación actualizada correctamente");
-      } else {
-        await SaveRoom(values);
-        message.success("Habitación creada correctamente");
-      }
-      form.resetFields();
-      onSubmit();
-    } catch {
-      message.error("Error al guardar la habitación");
-    } finally {
-      setLoading(false);
+ const handleFinish = async (values: any) => {
+  setLoading(true);
+  try {
+    const formData = new FormData();
+    formData.append("nameEs", values.nameEs);
+    formData.append("nameEn", values.nameEn);
+    formData.append("maxCapacity", values.maxCapacity.toString());
+    formData.append("price", values.price.toString());
+    formData.append("sizeBed", values.sizeBed);
+    formData.append("categoryRoomId", values.categoryRoomId.toString());
+    formData.append("descriptionEs", values.descriptionEs || "");
+    formData.append("descriptionEn", values.descriptionEn || "");
+
+    // Solo agregamos la imagen si fue seleccionada
+    if (values.image instanceof File) {
+      formData.append("image", values.image);
     }
-  };
+
+    if (initialData?.roomId) {
+      await UpdateRoomWithImage(initialData.roomId, formData); // ✅ ACTUALIZACIÓN
+      message.success("Habitación actualizada correctamente");
+    } else {
+      await SaveRoom(formData); // ✅ CREACIÓN
+      message.success("Habitación creada correctamente");
+    }
+
+    form.resetFields();
+    onSubmit();
+  } catch {
+    message.error("Error al guardar la habitación");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const inputStyle = {
     padding: "10px",
@@ -193,6 +213,28 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
             autoSize={{ minRows: 3, maxRows: 5 }}
           />
         </Form.Item>
+
+      <Form.Item
+          name="image"
+          label="Imagen"
+          valuePropName="file"
+          getValueFromEvent={(e) => {
+            if (Array.isArray(e)) return e;
+            return e?.file?.originFileObj || e?.fileList?.[0]?.originFileObj || null;
+          }}
+          rules={[{ required: true, message: "La imagen es requerida" }]}
+        >
+          <Upload
+            accept="image/*"
+            maxCount={1}
+            showUploadList={true}
+            beforeUpload={() => false} // Muy importante: evita el upload automático
+          >
+            <Button icon={<UploadOutlined />}>Seleccionar Imagen</Button>
+          </Upload>
+        </Form.Item>
+
+
 
         <Row justify="end" gutter={8}>
           <Col>
