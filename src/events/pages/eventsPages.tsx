@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Title } from "../../shared/text/title";
 import { DescriptionForm } from "../components/descriptionForm";
-import { EventDTO, GetEvents } from "../services/eventServices";
+import {
+  EventDTO,
+  GetEvents,
+  DeleteEvent, // ✅ Importar el servicio de eliminación
+} from "../services/eventServices";
 import { EventFilterContainer } from "../services/FilterContainer";
 import { EventFormModal } from "./EventFormModal";
 import Swal from "sweetalert2";
@@ -40,10 +44,15 @@ function EventPage() {
       cancelButtonText: "Cancelar",
     });
 
-    if (confirm.isConfirmed) {
-      // await DeleteEvent(event.id); // <- descomenta cuando tengas tu API real
-      console.log("Evento eliminado:", event.id);
-      await fetchEvents();
+    if (confirm.isConfirmed && event.id) {
+      try {
+        await DeleteEvent(event.id);
+        await fetchEvents(); // Refrescar la tabla
+        Swal.fire("Eliminado", "El evento ha sido eliminado.", "success");
+      } catch (error) {
+        console.error("Error al eliminar evento:", error);
+        Swal.fire("Error", "No se pudo eliminar el evento.", "error");
+      }
     }
   };
 
@@ -63,7 +72,7 @@ function EventPage() {
       <DescriptionForm
         events={events}
         onEdit={handleEdit}
-        onDelete={handleDelete} // ✅ ahora recibe el evento completo
+        onDelete={handleDelete}
       />
 
       {/* Modal para crear/editar evento */}
