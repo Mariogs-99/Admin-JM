@@ -1,56 +1,80 @@
 import { useEffect, useState } from "react";
 import { Title } from "../../shared/text/title";
 import { DescriptionForm } from "../components/descriptionForm";
-import eventList from "../Data/eventsList.json"
-import { GenericCard } from "../../shared/cards/genericCard";
-import { SectionInterface } from "../../shared/interface/sectionInterface";
-import { GetEvents } from "../services/eventServices";
+import { EventDTO, GetEvents } from "../services/eventServices";
+import { EventFilterContainer } from "../services/FilterContainer";
+import { EventFormModal } from "./EventFormModal";
+import Swal from "sweetalert2";
 
 function EventPage() {
-    const [events, setEvents] = useState<SectionInterface[]>([])
-    
-        useEffect(() => {
-            fetchevents()
-        }, []);
-    
-        const fetchevents = async () => {
-            try {
-                const response = await GetEvents()
-                setEvents(response)
-                console.log(response)
-            }
-            catch (error) {
-                console.log(error)
-            }
-        }
+  const [events, setEvents] = useState<EventDTO[]>([]);
+  const [filters, setFilters] = useState<any>({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventDTO | null>(null);
 
-    return (
-        <>
-            <span className="flex flex-col gap-7">
-                <span>
-                    <Title>Eventos</Title>
-                    
-                    
-                </span>
-                <DescriptionForm />
-            </span>
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
-            <h1 className="pt-10 pb-3 font-semibold text-lg">Secciones</h1>
-            <div className="flex flex-col gap-7">
-                {
-                    events.map((event) => (
-                        <GenericCard 
-                            key={event.title} 
-                            title={event.title} 
-                            description={event.description} 
-                            img={""} 
-                        />
-                    ))
-                }
-            </div>
-            
-        </>
-    )
+  const fetchEvents = async () => {
+    try {
+      const response = await GetEvents();
+      setEvents(response);
+    } catch (error) {
+      console.error("Error al cargar eventos:", error);
+    }
+  };
+
+  const handleEdit = (event: EventDTO) => {
+    setEditingEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (event: EventDTO) => {
+    const confirm = await Swal.fire({
+      title: "¿Eliminar evento?",
+      text: `¿Estás seguro de eliminar "${event.title}"? Esta acción no se puede deshacer.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (confirm.isConfirmed) {
+      // await DeleteEvent(event.id); // <- descomenta cuando tengas tu API real
+      console.log("Evento eliminado:", event.id);
+      await fetchEvents();
+    }
+  };
+
+  const handleAdd = () => {
+    setEditingEvent(null);
+    setIsModalOpen(true);
+  };
+
+  return (
+    <div className="flex flex-col gap-7">
+      <Title>Gestión de eventos</Title>
+
+      {/* Filtro y botón Agregar */}
+      <EventFilterContainer results={events.length} onAdd={handleAdd} />
+
+      {/* Lista de eventos en tabla */}
+      <DescriptionForm
+        events={events}
+        onEdit={handleEdit}
+        onDelete={handleDelete} // ✅ ahora recibe el evento completo
+      />
+
+      {/* Modal para crear/editar evento */}
+      <EventFormModal
+        visible={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSaved={fetchEvents}
+        initialData={editingEvent}
+      />
+    </div>
+  );
 }
 
 export default EventPage;
