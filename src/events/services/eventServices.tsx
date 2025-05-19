@@ -73,3 +73,23 @@ export const DeleteEvent = async (id: number): Promise<void> => {
     throw error;
   }
 };
+
+
+// Vista de eventos del administrador
+
+// Obtener todos los eventos (admin)
+export const GetAllEventsAdmin = async (): Promise<EventDTO[]> => {
+  try {
+    const response = await axios.get(`${BASE_URL}/api/events/all`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener eventos (admin):", error);
+    throw error;
+  }
+};
+

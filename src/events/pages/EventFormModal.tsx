@@ -8,6 +8,7 @@ import {
   Upload,
   Button,
   message,
+  Select,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -34,9 +35,11 @@ export const EventFormModal: FC<EventFormModalProps> = ({
       form.setFieldsValue({
         ...initialData,
         eventDate: dayjs(initialData.eventDate),
+        active: initialData.active ?? true,
       });
     } else {
       form.resetFields();
+      form.setFieldsValue({ active: true }); // valor por defecto
     }
   }, [visible, initialData]);
 
@@ -50,13 +53,12 @@ export const EventFormModal: FC<EventFormModalProps> = ({
       formData.append("eventDate", values.eventDate.format("YYYY-MM-DD"));
       formData.append("capacity", values.capacity.toString());
       formData.append("price", values.price.toString());
-      formData.append("active", "true");
+      formData.append("active", values.active.toString());
 
       const file = values.image;
       if (file instanceof File) {
         formData.append("image", file);
       } else if (!initialData?.id) {
-        // Si estamos creando y no hay imagen
         message.warning("La imagen es requerida.");
         return;
       }
@@ -113,6 +115,13 @@ export const EventFormModal: FC<EventFormModalProps> = ({
           <InputNumber min={0} step={0.01} className="w-full" />
         </Form.Item>
 
+        <Form.Item name="active" label="Estado" rules={[{ required: true }]}>
+          <Select>
+            <Select.Option value={true}>Activo</Select.Option>
+            <Select.Option value={false}>Inactivo</Select.Option>
+          </Select>
+        </Form.Item>
+
         <Form.Item
           name="image"
           label="Imagen del evento"
@@ -124,7 +133,7 @@ export const EventFormModal: FC<EventFormModalProps> = ({
           rules={
             !initialData
               ? [{ required: true, message: "La imagen es requerida" }]
-              : [] // en edición la imagen puede mantenerse igual
+              : []
           }
         >
           <Upload

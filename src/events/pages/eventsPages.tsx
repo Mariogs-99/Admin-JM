@@ -3,8 +3,8 @@ import { Title } from "../../shared/text/title";
 import { DescriptionForm } from "../components/descriptionForm";
 import {
   EventDTO,
-  GetEvents,
-  DeleteEvent, // ✅ Importar el servicio de eliminación
+  GetAllEventsAdmin, // ✅ Usamos este
+  DeleteEvent,
 } from "../services/eventServices";
 import { EventFilterContainer } from "../services/FilterContainer";
 import { EventFormModal } from "./EventFormModal";
@@ -22,7 +22,7 @@ function EventPage() {
 
   const fetchEvents = async () => {
     try {
-      const response = await GetEvents();
+      const response = await GetAllEventsAdmin(); // ✅ usamos el endpoint que devuelve TODOS
       setEvents(response);
     } catch (error) {
       console.error("Error al cargar eventos:", error);
@@ -47,7 +47,7 @@ function EventPage() {
     if (confirm.isConfirmed && event.id) {
       try {
         await DeleteEvent(event.id);
-        await fetchEvents(); // Refrescar la tabla
+        await fetchEvents(); // Recargar los datos
         Swal.fire("Eliminado", "El evento ha sido eliminado.", "success");
       } catch (error) {
         console.error("Error al eliminar evento:", error);

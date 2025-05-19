@@ -1,11 +1,19 @@
 import { useState } from 'react';
-import { Table, Button, Space } from 'antd';
+import { Table, Button, Space, Image } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { SortableTitle } from '../../reservation/components/sort/title/sortableTitle';
 import { EventDTO } from '../services/eventServices';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 dayjs.locale('es');
+
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_URL || "";
+const DEFAULT_EVENT_IMAGE = "/images/default-event.webp";
+
+const getImageUrl = (relativePath: string | null | undefined): string => {
+  if (!relativePath) return DEFAULT_EVENT_IMAGE;
+  return `${IMAGE_BASE_URL.replace(/\/$/, "")}/${relativePath.replace(/^\//, "")}`;
+};
 
 export const EventCardInformation = ({
   data,
@@ -14,11 +22,26 @@ export const EventCardInformation = ({
 }: {
   data: EventDTO[];
   onEdit: (event: EventDTO) => void;
-  onDelete: (event: EventDTO) => void; // ✅ ahora recibe el evento completo
+  onDelete: (event: EventDTO) => void;
 }) => {
   const [sortedInfo, setSortedInfo] = useState<any>({});
 
   const columns = [
+    {
+      title: "Imagen",
+      dataIndex: 'imageUrl',
+      key: 'imageUrl',
+      render: (imageUrl?: string | null) => (
+        <Image
+          width={64}
+          height={64}
+          src={getImageUrl(imageUrl)}
+          alt="Evento"
+          fallback={DEFAULT_EVENT_IMAGE}
+          style={{ objectFit: "cover", borderRadius: 6 }}
+        />
+      ),
+    },
     {
       title: () => (
         <SortableTitle
@@ -28,7 +51,6 @@ export const EventCardInformation = ({
       ),
       dataIndex: 'title',
       key: 'title',
-      render: (text: string) => <span>{text}</span>,
     },
     {
       title: () => (
@@ -105,7 +127,7 @@ export const EventCardInformation = ({
           </Button>
           <Button
             icon={<DeleteOutlined />}
-            onClick={() => onDelete(record)} // ✅ pasa el evento completo
+            onClick={() => onDelete(record)}
             type="primary"
             danger
             style={{ borderRadius: 6 }}
