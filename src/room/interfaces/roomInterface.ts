@@ -1,16 +1,32 @@
-export interface CategoryRoom {
-    categoryRoomId: number;
-    nameCategoryEs: string,
-    nameCategoryEn: string,
-    descriptionEs: string,
-    descriptionEn: string,
-    maxPeople?: number;
-    bedInfo?: string;
-    roomSize?: string;
-    hasTv?: boolean;
-    hasAc?: boolean;
-    hasPrivateBathroom?: boolean;
+// roomInterface.ts
+
+export interface RoomResponse {
+  roomId: number;
+  name: string;
+  maxCapacity: number;
+  description: string;
+  price: number;
+  sizeBed: string;
+  quantity: number;
+  categoryRoomId: number;
+  imageUrl: string | null;
 }
+
+// Esta interface se sigue usando para cargar categorías
+export interface CategoryRoom {
+  categoryRoomId: number;
+  nameCategoryEs: string;
+  nameCategoryEn: string;
+  descriptionEs: string;
+  descriptionEn: string;
+  maxPeople?: number;
+  bedInfo?: string;
+  roomSize?: string;
+  hasTv?: boolean;
+  hasAc?: boolean;
+  hasPrivateBathroom?: boolean;
+}
+
 
 export interface Room {
     roomId: number;

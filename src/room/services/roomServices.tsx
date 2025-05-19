@@ -1,28 +1,27 @@
+// roomServices.ts
+
 import axios from "axios";
-import { CategoryRoom, Room } from "../interfaces/roomInterface";
+import { RoomResponse, CategoryRoom } from "../interfaces/roomInterface";
 import { getToken } from "../../login/services/loginService";
-// import { LoginResponse, LoginRequest } from "../interfaces/loginInterface";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const GetRooms = async (): Promise<Room[]> => {
-    try {
-        const response = await axios.get(
-            `${BASE_URL}/api/room/`,
-            {
-                headers: {
-                    Authorization: `Bearer ${getToken()}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        )
-        return response.data
-    }
-    catch (error) {
-        throw new Error("Error al iniciar sesión"); // Manejo de errores adecuado
-    }
-}
+// ✅ Obtener habitaciones
+export const GetRooms = async (): Promise<RoomResponse[]> => {
+  try {
+    const response = await axios.get(`${BASE_URL}/api/room/`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error("Error al obtener habitaciones");
+  }
+};
 
+// ✅ Guardar habitación con imagen
 export const SaveRoom = async (formData: FormData): Promise<void> => {
   try {
     await axios.post(`${BASE_URL}/api/room/with-image`, formData, {
@@ -36,8 +35,7 @@ export const SaveRoom = async (formData: FormData): Promise<void> => {
   }
 };
 
-
-
+// ✅ Actualizar habitación con imagen
 export const UpdateRoomWithImage = async (id: number, formData: FormData): Promise<void> => {
   try {
     await axios.put(`${BASE_URL}/api/room/with-image/${id}`, formData, {
@@ -51,7 +49,7 @@ export const UpdateRoomWithImage = async (id: number, formData: FormData): Promi
   }
 };
 
-
+// ✅ Eliminar habitación
 export const DeleteRoom = async (id: number): Promise<void> => {
   try {
     await axios.delete(`${BASE_URL}/api/room/${id}`, {
@@ -65,76 +63,3 @@ export const DeleteRoom = async (id: number): Promise<void> => {
     throw error;
   }
 };
-
-
-
-
-
-
-
-
-//!---------------------------------ROOMS IMAGE------------------------------------------------
-export const getImagesId = async (id: number) => {
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/api/room-img/`,
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            "Content-Type": "application/json",
-          },
-          params: {
-            roomId: id,
-            lang:"es",
-          },
-        }
-      )
-      console.log("imageIDs: ",response.data)
-      return response.data
-    }
-    catch (error) {
-      console.log(error)
-    }
-  }
-  interface imageInterface {
-    imgId: number
-  }
-  
-  export const getRoomImage = async ({ imgId }: imageInterface) => {
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/api/img/download/${imgId}`,
-        {
-          responseType:"blob",
-        }
-      )
-      console.log("images: ", response.data)
-      const imageUrl = URL.createObjectURL(response.data);
-      return imageUrl
-    }
-    catch (error) {
-      console.log(error)
-    }
-  }
-  
-  export const getRoomImages = async (roomId: number) => {
-    try {
-      // Obtener la lista de imágenes de la habitación
-      const images = await getImagesId(roomId);
-  
-      if (!images || images.length === 0) {
-        console.log("No hay imágenes disponibles.");
-        return [];
-      }
-  
-      // Obtener las imágenes usando sus IDs
-      const imagePromises = images.map((img: { imgId: number }) => getRoomImage({ imgId: img.imgId }));
-  
-      // Esperar todas las promesas
-      const roomImages = await Promise.all(imagePromises);
-      return roomImages;
-    } catch (error) {
-      console.log("Error obteniendo imágenes:", error);
-      return [];
-    }
-  };

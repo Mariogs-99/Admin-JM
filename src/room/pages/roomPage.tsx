@@ -3,19 +3,32 @@ import { Title } from "../../shared/text/title";
 import { RoomList } from "../components/roomList/roomList";
 import { FilterContainer } from "../components/filter/headerFilter/FilterContainer";
 import { RoomFormModal } from "./RoomFormModal";
-import { RoomCard } from "../interfaces/roomInterface";
 import { DeleteModal } from "./DeleteConfModal";
 import { DeleteRoom } from "../services/roomServices";
 import { message } from "antd";
+
+// Tipo Room más preciso
+interface Room {
+  roomId: number;
+  nameEs: string;
+  nameEn: string;
+  maxCapacity: number;
+  descriptionEs: string;
+  descriptionEn: string;
+  price: number;
+  quantity: number;
+  sizeBed: string;
+  categoryRoomId: number;
+  imageUrl?: string;
+}
 
 function RoomPage() {
   const [results, setResults] = useState<number>(0);
   const [filters, setFilters] = useState<{ searchTerm?: string }>({});
   const [modalOpen, setModalOpen] = useState(false);
-  const [roomToEdit, setRoomToEdit] = useState<RoomCard | null>(null);
+  const [roomToEdit, setRoomToEdit] = useState<Room | null>(null);
   const [refresh, setRefresh] = useState(false);
 
-  // Estado para eliminación
   const [deleteRoomId, setDeleteRoomId] = useState<number | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 

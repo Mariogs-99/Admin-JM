@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { Table, Button, Space } from 'antd';
+import { useEffect, useState } from 'react';
+import { Table, Button, Space, Image } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { SortableTitle } from '../../reservation/components/sort/title/sortableTitle';
+import { getAllCategoriesRoom } from '../../category/services/categoryService';
+
+const IMAGE_BASE_URL = 'http://localhost:8080';
 
 export const RoomCardInformation = ({
   data,
@@ -13,92 +16,77 @@ export const RoomCardInformation = ({
   onDelete: (id: number) => void;
 }) => {
   const [sortedInfo, setSortedInfo] = useState<any>({});
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    getAllCategoriesRoom()
+      .then(setCategories)
+      .catch(() => console.error("Error cargando categorías"));
+  }, []);
+
+  const getCategoryName = (categoryRoomId: number) => {
+    return categories.find(cat => cat.categoryRoomId === categoryRoomId)?.nameCategoryEs || "No especificada";
+  };
 
   const columns = [
     {
-      title: () => (
-        <SortableTitle
-          title="Habitación"
-          sortedColumn={sortedInfo?.columnKey === "nameEs" ? sortedInfo : undefined}
+      title: "Imagen",
+      key: "image",
+      render: (_: any, record: any) => (
+        <Image
+          src={
+            record.imageUrl
+              ? `${IMAGE_BASE_URL.replace(/\/$/, "")}/${record.imageUrl.replace(/^\//, "")}`
+              : "/img/default.jpg"
+          }
+          width={60}
+          height={60}
+          alt="Room"
+          style={{ objectFit: "cover", borderRadius: 8 }}
         />
       ),
-      dataIndex: ["nameEs"],
-      key: "nameEs",
-      render: (text: string) => <span>{text}</span>
     },
     {
-      title: () => (
-        <SortableTitle
-          title="Categoría"
-          sortedColumn={sortedInfo?.columnKey === "categoryRoom" ? sortedInfo : undefined}
-        />
-      ),
-      key: "categoryRoom",
-      render: (_: any, record: any) => record.categoryRoom?.nameCategoryEs || "No especificada",
+      title: () => <SortableTitle title="Nombre de la Habitación" sortedColumn={sortedInfo?.columnKey === "name" ? sortedInfo : undefined} />,
+      dataIndex: "name",
+      key: "name"
     },
     {
-      title: () => (
-        <SortableTitle
-          title="Descripción"
-          sortedColumn={sortedInfo?.columnKey === "descriptionEs" ? sortedInfo : undefined}
-        />
-      ),
-      dataIndex: ["descriptionEs"],
-      key: "descriptionEs",
+      title: () => <SortableTitle title="Categoría" sortedColumn={sortedInfo?.columnKey === "categoryRoomId" ? sortedInfo : undefined} />,
+      dataIndex: "categoryRoomId",
+      key: "categoryRoomId",
+      render: (categoryRoomId: number) => getCategoryName(categoryRoomId)
     },
     {
-      title: () => (
-        <SortableTitle
-          title="Precio"
-          sortedColumn={sortedInfo?.columnKey === "price" ? sortedInfo : undefined}
-        />
-      ),
-      dataIndex: ["price"],
+      title: () => <SortableTitle title="Precio" sortedColumn={sortedInfo?.columnKey === "price" ? sortedInfo : undefined} />,
+      dataIndex: "price",
       key: "price",
-      render: (price: number) => (
-        <span style={{ fontWeight: 500 }}>{`$ ${price.toFixed(2)}`}</span>
-      )
+      render: (price: number) => <span style={{ fontWeight: 500 }}>{`$ ${price.toFixed(2)}`}</span>
     },
     {
-      title: () => (
-        <SortableTitle
-          title="Capacidad Máxima"
-          sortedColumn={sortedInfo?.columnKey === "maxCapacity" ? sortedInfo : undefined}
-        />
-      ),
-      dataIndex: ["maxCapacity"],
-      key: "maxCapacity",
+      title: () => <SortableTitle title="Cantidad de Habitaciones" sortedColumn={sortedInfo?.columnKey === "quantity" ? sortedInfo : undefined} />,
+      dataIndex: "quantity",
+      key: "quantity"
     },
     {
-      title: () => (
-        <SortableTitle
-          title="Cama"
-          sortedColumn={sortedInfo?.columnKey === "sizeBed" ? sortedInfo : undefined}
-        />
-      ),
-      dataIndex: ["sizeBed"],
-      key: "sizeBed",
+      title: () => <SortableTitle title="Capacidad Máxima" sortedColumn={sortedInfo?.columnKey === "maxCapacity" ? sortedInfo : undefined} />,
+      dataIndex: "maxCapacity",
+      key: "maxCapacity"
+    },
+    {
+      title: () => <SortableTitle title="Tamaño de Cama" sortedColumn={sortedInfo?.columnKey === "sizeBed" ? sortedInfo : undefined} />,
+      dataIndex: "sizeBed",
+      key: "sizeBed"
     },
     {
       title: "Acciones",
       key: "actions",
       render: (_: any, record: any) => (
         <Space size="middle">
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => onEdit(record)}
-            type="default"
-            style={{ borderRadius: 6 }}
-          >
+          <Button icon={<EditOutlined />} onClick={() => onEdit(record)} type="default" style={{ borderRadius: 6 }}>
             Editar
           </Button>
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => onDelete(record.roomId)}
-            type="primary"
-            danger
-            style={{ borderRadius: 6 }}
-          >
+          <Button icon={<DeleteOutlined />} onClick={() => onDelete(record.roomId)} type="primary" danger style={{ borderRadius: 6 }}>
             Eliminar
           </Button>
         </Space>

@@ -1,7 +1,20 @@
 import { useEffect, useState } from "react";
-import { getRoomImages, GetRooms } from "../../services/roomServices";
-import { RoomCard } from "../../interfaces/roomInterface";
+import { GetRooms } from "../../services/roomServices";
 import { RoomCardInformation } from "../roomCardInformation";
+
+interface Room {
+  roomId: number;
+  nameEs: string;
+  nameEn: string;
+  maxCapacity: number;
+  descriptionEs: string;
+  descriptionEn: string;
+  price: number;
+  quantity: number;
+  sizeBed: string;
+  categoryRoomId: number;
+  imageUrl?: string; // esto viene del backend
+}
 
 export const RoomList = ({
   setResults,
@@ -9,32 +22,33 @@ export const RoomList = ({
   refetchTrigger,
   setRoomToEdit,
   setModalOpen,
-  onDeleteRoom, // 👈 nueva prop
+  onDeleteRoom,
 }: {
-  setResults: any;
-  filter: any;
+  setResults: (count: number) => void;
+  filter: { searchTerm?: string };
   refetchTrigger: boolean;
-  setRoomToEdit: (room: RoomCard | null) => void;
+  setRoomToEdit: (room: Room | null) => void;
   setModalOpen: (visible: boolean) => void;
-  onDeleteRoom: (roomId: number) => void; // 👈 nueva prop
+  onDeleteRoom: (roomId: number) => void;
 }) => {
-  const [roomList, setRoomList] = useState<RoomCard[]>([]);
-  const [originalRoomList, setOriginalRoomList] = useState<RoomCard[]>([]);
+  const [roomList, setRoomList] = useState<Room[]>([]);
+  const [originalRoomList, setOriginalRoomList] = useState<Room[]>([]);
 
   const getRooms = async () => {
     try {
       const rooms = await GetRooms();
       setResults(rooms.length);
-      const roomswithImages = await Promise.all(
-        rooms.map(async (room) => {
-          const image = await getRoomImages(room.roomId);
-          return { ...room, image: image, key: room.roomId };
-        })
-      );
-      setRoomList(roomswithImages);
-      setOriginalRoomList(roomswithImages);
+
+      const formattedRooms = rooms.map((room: any) => ({
+        ...room,
+        key: room.roomId,
+        imageUrl: room.imageUrl ? `/${room.imageUrl}` : "/img/default.jpg",
+      }));
+
+      setRoomList(formattedRooms);
+      setOriginalRoomList(formattedRooms);
     } catch (error) {
-      console.log(error);
+      console.error("Error cargando habitaciones:", error);
     }
   };
 
@@ -46,20 +60,20 @@ export const RoomList = ({
     if (!filter.searchTerm) {
       setRoomList(originalRoomList);
     } else {
-      const filteredRooms = originalRoomList.filter((room) =>
-        room.nameEs.toLowerCase().includes(filter.searchTerm.toLowerCase())
+      const filtered = originalRoomList.filter((room) =>
+        room.nameEs.toLowerCase().includes(filter.searchTerm!.toLowerCase())
       );
-      setRoomList(filteredRooms);
+      setRoomList(filtered);
     }
   }, [filter, originalRoomList]);
 
-  const handleEditRoom = (room: RoomCard) => {
+  const handleEditRoom = (room: Room) => {
     setRoomToEdit(room);
     setModalOpen(true);
   };
 
   const handleDeleteRoom = (id: number) => {
-    onDeleteRoom(id); // 👈 delegamos al RoomPage
+    onDeleteRoom(id);
   };
 
   return (

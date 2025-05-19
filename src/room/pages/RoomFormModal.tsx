@@ -13,7 +13,7 @@ import {
   Upload,
 } from "antd";
 import { getAllCategoriesRoom } from "../../category/services/categoryService";
-import { SaveRoom,UpdateRoomWithImage } from "../services/roomServices";
+import { SaveRoom, UpdateRoomWithImage } from "../services/roomServices";
 import { UploadOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
@@ -46,48 +46,47 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
     if (visible && initialData) {
       const transformed = {
         ...initialData,
-        categoryRoomId: initialData?.categoryRoom?.categoryRoomId,
+        nameEs: initialData.name || initialData.nameEs,
+        descriptionEs: initialData.description || initialData.descriptionEs,
+        categoryRoomId:
+          initialData.categoryRoom?.categoryRoomId ?? initialData.categoryRoomId,
       };
       form.setFieldsValue(transformed);
     }
   }, [initialData, visible]);
 
- const handleFinish = async (values: any) => {
-  setLoading(true);
-  try {
-    const formData = new FormData();
-    formData.append("nameEs", values.nameEs);
-    formData.append("nameEn", values.nameEn);
-    formData.append("maxCapacity", values.maxCapacity.toString());
-    formData.append("price", values.price.toString());
-    formData.append("sizeBed", values.sizeBed);
-    formData.append("categoryRoomId", values.categoryRoomId.toString());
-    formData.append("descriptionEs", values.descriptionEs || "");
-    formData.append("descriptionEn", values.descriptionEn || "");
+  const handleFinish = async (values: any) => {
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("nameEs", values.nameEs);
+      formData.append("maxCapacity", values.maxCapacity.toString());
+      formData.append("price", values.price.toString());
+      formData.append("sizeBed", values.sizeBed);
+      formData.append("categoryRoomId", values.categoryRoomId.toString());
+      formData.append("descriptionEs", values.descriptionEs || "");
+      formData.append("quantity", values.quantity.toString());
 
-    // Solo agregamos la imagen si fue seleccionada
-    if (values.image instanceof File) {
-      formData.append("image", values.image);
+      if (values.image instanceof File) {
+        formData.append("image", values.image);
+      }
+
+      if (initialData?.roomId) {
+        await UpdateRoomWithImage(initialData.roomId, formData);
+        message.success("Habitación actualizada correctamente");
+      } else {
+        await SaveRoom(formData);
+        message.success("Habitación creada correctamente");
+      }
+
+      form.resetFields();
+      onSubmit();
+    } catch (error) {
+      message.error("Error al guardar la habitación");
+    } finally {
+      setLoading(false);
     }
-
-    if (initialData?.roomId) {
-      await UpdateRoomWithImage(initialData.roomId, formData); // ✅ ACTUALIZACIÓN
-      message.success("Habitación actualizada correctamente");
-    } else {
-      await SaveRoom(formData); // ✅ CREACIÓN
-      message.success("Habitación creada correctamente");
-    }
-
-    form.resetFields();
-    onSubmit();
-  } catch {
-    message.error("Error al guardar la habitación");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  };
 
   const inputStyle = {
     padding: "10px",
@@ -119,16 +118,19 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
           <Col span={12}>
             <Form.Item
               name="nameEs"
-              label="Nombre (ES)"
-              style={{ marginBottom: 16 }}
+              label="Nombre"
               rules={[{ required: true, message: "Campo requerido" }]}
             >
               <Input placeholder="Ej. Habitación 101" allowClear style={inputStyle} />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="nameEn" label="Nombre (EN)" style={{ marginBottom: 16 }}>
-              <Input placeholder="Room 101" allowClear style={inputStyle} />
+            <Form.Item
+              name="quantity"
+              label="Cantidad de cuartos disponibles"
+              rules={[{ required: true, message: "Campo requerido" }]}
+            >
+              <InputNumber min={0} style={{ width: "100%", ...inputStyle }} />
             </Form.Item>
           </Col>
         </Row>
@@ -137,8 +139,7 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
           <Col span={12}>
             <Form.Item
               name="maxCapacity"
-              label="Capacidad"
-              style={{ marginBottom: 16 }}
+              label="Capacidad Maxima de huespedes"
               rules={[{ required: true, message: "Campo requerido" }]}
             >
               <InputNumber min={1} max={10} style={{ width: "100%", ...inputStyle }} />
@@ -148,7 +149,6 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
             <Form.Item
               name="price"
               label="Precio"
-              style={{ marginBottom: 16 }}
               rules={[{ required: true, message: "Campo requerido" }]}
             >
               <InputNumber
@@ -156,7 +156,7 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
                 step={0.01}
                 style={{ width: "100%", ...inputStyle }}
                 formatter={(value) => `$ ${value}`}
-                 parser={((value?: string) => (value ? value.replace(/[^\d.]/g, "") : "")) as any}
+                parser={((value?: string) => (value ? value.replace(/[^\d.]/g, "") : "")) as any}
               />
             </Form.Item>
           </Col>
@@ -167,7 +167,6 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
             <Form.Item
               name="sizeBed"
               label="Tamaño de cama"
-              style={{ marginBottom: 16 }}
               rules={[{ required: true, message: "Campo requerido" }]}
             >
               <Input placeholder="Ej. 1.5 mt" allowClear style={inputStyle} />
@@ -177,7 +176,6 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
             <Form.Item
               name="categoryRoomId"
               label="Categoría"
-              style={{ marginBottom: 16 }}
               rules={[{ required: true, message: "Campo requerido" }]}
             >
               <Select
@@ -192,29 +190,19 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
                 ))}
               </Select>
             </Form.Item>
-
           </Col>
         </Row>
 
-        <Form.Item name="descriptionEs" label="Descripción (ES)" style={{ marginBottom: 16 }}>
+        <Form.Item name="descriptionEs" label="Descripción">
           <Input.TextArea
             rows={3}
             style={{ borderRadius: 8, padding: 10 }}
-            placeholder="Descripción en español"
+            placeholder="Descripción de la habitación"
             autoSize={{ minRows: 3, maxRows: 5 }}
           />
         </Form.Item>
 
-        <Form.Item name="descriptionEn" label="Descripción (EN)" style={{ marginBottom: 24 }}>
-          <Input.TextArea
-            rows={3}
-            style={{ borderRadius: 8, padding: 10 }}
-            placeholder="Descripción en inglés (opcional)"
-            autoSize={{ minRows: 3, maxRows: 5 }}
-          />
-        </Form.Item>
-
-      <Form.Item
+        <Form.Item
           name="image"
           label="Imagen"
           valuePropName="file"
@@ -222,19 +210,17 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
             if (Array.isArray(e)) return e;
             return e?.file?.originFileObj || e?.fileList?.[0]?.originFileObj || null;
           }}
-          rules={[{ required: true, message: "La imagen es requerida" }]}
+          rules={[{ required: !initialData, message: "La imagen es requerida" }]}
         >
           <Upload
             accept="image/*"
             maxCount={1}
             showUploadList={true}
-            beforeUpload={() => false} // Muy importante: evita el upload automático
+            beforeUpload={() => false}
           >
             <Button icon={<UploadOutlined />}>Seleccionar Imagen</Button>
           </Upload>
         </Form.Item>
-
-
 
         <Row justify="end" gutter={8}>
           <Col>
