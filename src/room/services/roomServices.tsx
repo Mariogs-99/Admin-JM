@@ -6,10 +6,10 @@ import { getToken } from "../../login/services/loginService";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// ✅ Obtener habitaciones
+// ✅ Obtener habitaciones (con categoría incluida)
 export const GetRooms = async (): Promise<RoomResponse[]> => {
   try {
-    const response = await axios.get(`${BASE_URL}/api/room/`, {
+    const response = await axios.get(`${BASE_URL}/api/room/all`, {
       headers: {
         Authorization: `Bearer ${getToken()}`,
         "Content-Type": "application/json",
@@ -17,6 +17,7 @@ export const GetRooms = async (): Promise<RoomResponse[]> => {
     });
     return response.data;
   } catch (error) {
+    console.error("Error al obtener habitaciones:", error);
     throw new Error("Error al obtener habitaciones");
   }
 };

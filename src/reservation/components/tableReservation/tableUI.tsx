@@ -1,27 +1,25 @@
-import { Table, message } from "antd";
-import { useEffect, useState } from "react";
+import { Table, message, Button } from "antd";
+import { useState } from "react";
 import { SortableTitle } from "../sort/title/sortableTitle";
 import { formatDate } from "../../../utils/formatDate";
-import "./tableUI.css";
 import { ReservationFormModal } from "../../pages/ReservationFormModal";
 import { deleteReservation } from "../../../reservation/services/reservationService";
-import { DeleteConfirmationModal } from "../../pages/DeleteConfirmationModal"; // Asegúrate de la ruta
+import { DeleteConfirmationModal } from "../../pages/DeleteConfirmationModal";
+import { Reservation } from "../../../reservation/interfaces/Reservation";
 
-export const TableUI = ({
-  data,
-  onReservationUpdated,
-}: {
-  data: any;
+interface TableUIProps {
+  data: Reservation[];
   onReservationUpdated?: () => void;
-}) => {
+}
+
+export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
   const [sortedInfo, setSortedInfo] = useState<any>({});
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
-
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [reservationToDelete, setReservationToDelete] = useState<number | null>(null);
 
-  const handleEdit = (reservation: any) => {
+  const handleEdit = (reservation: Reservation) => {
     setSelectedReservation(reservation);
     setModalOpen(true);
   };
@@ -50,144 +48,150 @@ export const TableUI = ({
     setSortedInfo(sorter);
   };
 
+  const ActionButtons = ({ record }: { record: Reservation }) => (
+    <div className="flex gap-2">
+      <Button type="primary" onClick={() => handleEdit(record)}>
+        Editar
+      </Button>
+      <Button danger onClick={() => handleDeleteClick(record.reservationId)}>
+        Eliminar
+      </Button>
+    </div>
+  );
+
   const columns = [
     {
       title: () => (
         <SortableTitle
           title="Huésped"
-          sortedColumn={sortedInfo?.columnKey === "name" ? sortedInfo : undefined}
+          sortedColumn={sortedInfo.columnKey === "name" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: ["name"],
+      dataIndex: "name",
       key: "name",
-      sorter: (a: any, b: any) => a.name.localeCompare(b.name),
+      sorter: (a: Reservation, b: Reservation) => a.name.localeCompare(b.name),
       sortOrder: sortedInfo.columnKey === "name" && sortedInfo.order,
     },
     {
       title: () => (
         <SortableTitle
           title="Habitación"
-          sortedColumn={sortedInfo?.columnKey === "nameEs" ? sortedInfo : undefined}
+          sortedColumn={sortedInfo.columnKey === "room" ? sortedInfo : undefined}
         />
       ),
       dataIndex: ["room", "nameEs"],
-      key: "nameEs",
-      sorter: (a: any, b: any) => a.room.nameEs.localeCompare(b.room.nameEs),
-      sortOrder: sortedInfo.columnKey === "nameEs" && sortedInfo.order,
+      key: "room",
+      render: (_: any, record: Reservation) => record.room?.nameEs || "Sin nombre",
     },
     {
       title: () => (
         <SortableTitle
           title="Fecha inicio"
-          sortedColumn={sortedInfo?.columnKey === "initDate" ? sortedInfo : undefined}
+          sortedColumn={sortedInfo.columnKey === "initDate" ? sortedInfo : undefined}
         />
       ),
       dataIndex: "initDate",
       key: "initDate",
       render: formatDate,
-      sorter: (a: any, b: any) =>
+      sorter: (a: Reservation, b: Reservation) =>
         new Date(a.initDate).getTime() - new Date(b.initDate).getTime(),
-      sortOrder: sortedInfo.columnKey === "initDate" && sortedInfo.order,
     },
     {
       title: () => (
         <SortableTitle
           title="Fecha fin"
-          sortedColumn={sortedInfo?.columnKey === "finishDate" ? sortedInfo : undefined}
+          sortedColumn={sortedInfo.columnKey === "finishDate" ? sortedInfo : undefined}
         />
       ),
       dataIndex: "finishDate",
       key: "finishDate",
       render: formatDate,
-      sorter: (a: any, b: any) =>
+      sorter: (a: Reservation, b: Reservation) =>
         new Date(a.finishDate).getTime() - new Date(b.finishDate).getTime(),
-      sortOrder: sortedInfo.columnKey === "finishDate" && sortedInfo.order,
     },
     {
       title: () => (
         <SortableTitle
-          title="Categoría"
-          sortedColumn={sortedInfo?.columnKey === "categoryEs" ? sortedInfo : undefined}
+          title="Habitaciones reservadas"
+          sortedColumn={sortedInfo.columnKey === "quantityReserved" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: ["categoryroom", "nameCategoryEs"],
-      key: "categoryEs",
-      sorter: (a: any, b: any) =>
-        a.categoryroom.nameCategoryEs.localeCompare(b.categoryroom.nameCategoryEs),
-      sortOrder: sortedInfo.columnKey === "categoryEs" && sortedInfo.order,
+      dataIndex: "quantityReserved",
+      key: "quantityReserved",
+      sorter: (a: Reservation, b: Reservation) =>
+        a.quantityReserved - b.quantityReserved,
+    },
+    {
+      title: () => (
+        <SortableTitle
+          title="Capacidad"
+          sortedColumn={sortedInfo.columnKey === "cantPeople" ? sortedInfo : undefined}
+        />
+      ),
+      dataIndex: "cantPeople",
+      key: "cantPeople",
+      sorter: (a: Reservation, b: Reservation) => a.cantPeople - b.cantPeople,
+    },
+    {
+      title: () => (
+        <SortableTitle
+          title="Teléfono"
+          sortedColumn={sortedInfo.columnKey === "phone" ? sortedInfo : undefined}
+        />
+      ),
+      dataIndex: "phone",
+      key: "phone",
     },
     {
       title: () => (
         <SortableTitle
           title="Pago"
-          sortedColumn={sortedInfo?.columnKey === "payment" ? sortedInfo : undefined}
+          sortedColumn={sortedInfo.columnKey === "payment" ? sortedInfo : undefined}
         />
       ),
       dataIndex: "payment",
       key: "payment",
       render: (payment: number) => `$${payment.toFixed(2)}`,
-      sorter: (a: any, b: any) => a.payment - b.payment,
-      sortOrder: sortedInfo.columnKey === "payment" && sortedInfo.order,
+      sorter: (a: Reservation, b: Reservation) => a.payment - b.payment,
     },
     {
       title: () => (
         <SortableTitle
-          title="Cant. personas"
-          sortedColumn={sortedInfo?.columnKey === "cantPeople" ? sortedInfo : undefined}
+          title="Creación"
+          sortedColumn={sortedInfo.columnKey === "creationDate" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: "cantPeople",
-      key: "cantPeople",
-      sorter: (a: any, b: any) => a.cantPeople - b.cantPeople,
-      sortOrder: sortedInfo.columnKey === "cantPeople" && sortedInfo.order,
-    },
-    {
-      title: "Teléfono",
-      dataIndex: "phone",
-      key: "phone",
+      dataIndex: "creationDate",
+      key: "creationDate",
+      render: formatDate,
+      sorter: (a: Reservation, b: Reservation) =>
+        new Date(a.creationDate).getTime() - new Date(b.creationDate).getTime(),
     },
     {
       title: "Acciones",
       key: "actions",
-      render: (_: any, record: any) => (
-        <div className="flex gap-2">
-          <button
-            className="bg-blue-500 text-white px-2 py-1 rounded"
-            onClick={() => handleEdit(record)}
-          >
-            Editar
-          </button>
-          <button
-            className="bg-red-500 text-white px-2 py-1 rounded"
-            onClick={() => handleDeleteClick(record.reservationId)}
-          >
-            Eliminar
-          </button>
-        </div>
-      ),
+      render: (_: any, record: Reservation) => <ActionButtons record={record} />,
     },
   ];
 
   return (
     <>
       <Table
-        dataSource={data.map((item: any) => ({ ...item, key: item.reservationId }))}
+        dataSource={(data ?? []).map((item) => ({ ...item, key: item.reservationId }))}
         columns={columns}
         pagination={{ pageSize: 6 }}
         onChange={handleChange}
       />
 
- <ReservationFormModal
-  visible={modalOpen}
-  onCancel={() => setModalOpen(false)}
-  onSubmit={() => {
-    setModalOpen(false);           // ✅ Cierra el modal después de guardar
-    onReservationUpdated?.();      // ✅ Recarga los datos
-  }}
-  initialData={selectedReservation}
-/>
-
-
+      <ReservationFormModal
+        visible={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onSubmit={() => {
+          setModalOpen(false);
+          onReservationUpdated?.();
+        }}
+        initialData={selectedReservation}
+      />
 
       <DeleteConfirmationModal
         visible={deleteModalVisible}

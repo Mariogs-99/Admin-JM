@@ -1,6 +1,4 @@
 import { FC, useEffect, useState } from "react";
-
-
 import {
   Modal,
   Form,
@@ -27,7 +25,7 @@ const { Title, Text } = Typography;
 interface ReservationFormModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSubmit: () => void; // 👈 Cambiado para no aceptar data innecesaria
+  onSubmit: () => void;
   initialData?: any;
 }
 
@@ -70,6 +68,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
         ]);
         setRooms(roomsData);
         setCategories(categoriesData);
+        setFilteredRooms(roomsData);
       } catch (err) {
         console.error("Error al cargar habitaciones o categorías", err);
       }
@@ -77,80 +76,63 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
     fetchData();
   }, []);
 
- useEffect(() => {
-  if (!visible || !initialData) return;
+  useEffect(() => {
+    if (!visible || !initialData) return;
 
-  const {
-    name,
-    phone,
-    email,
-    cantPeople,
-    categoryroom,
-    room,
-    initDate,
-    finishDate,
-    payment,
-  } = initialData;
+    const {
+      name,
+      phone,
+      email,
+      cantPeople,
+      quantityReserved,
+      room,
+      initDate,
+      finishDate,
+      payment,
+    } = initialData;
 
-  if (rooms.length === 0) return;
+    if (rooms.length === 0) return;
 
-  const initDay = `${initDate[0]}-${String(initDate[1]).padStart(2, "0")}-${String(initDate[2]).padStart(2, "0")}`;
-  const finishDay = `${finishDate[0]}-${String(finishDate[1]).padStart(2, "0")}-${String(finishDate[2]).padStart(2, "0")}`;
+    const initDay = `${initDate[0]}-${String(initDate[1]).padStart(2, "0")}-${String(initDate[2]).padStart(2, "0")}`;
+    const finishDay = `${finishDate[0]}-${String(finishDate[1]).padStart(2, "0")}-${String(finishDate[2]).padStart(2, "0")}`;
 
-  // Cargar campos base sin habitación aún
-  form.setFieldsValue({
-    name,
-    phone,
-    email,
-    cantPeople,
-    categoryRoomId: categoryroom?.categoryRoomId,
-    initDate: dayjs(initDay),
-    finishDate: dayjs(finishDay),
-    payment,
-  });
+    form.setFieldsValue({
+      name,
+      phone,
+      email,
+      cantPeople,
+      quantityReserved,
+      initDate: dayjs(initDay),
+      finishDate: dayjs(finishDay),
+      roomId: room?.roomId,
+      payment,
+    });
 
-  const filtered = rooms.filter(r => r.categoryRoom.categoryRoomId === categoryroom.categoryRoomId);
-  setFilteredRooms(filtered);
+    setFilteredRooms(rooms);
+    setSelectedRoomPrice(room?.price ?? 0);
+    calculatePrice(room?.price, initDay, finishDay);
+    setDates({ checkIn: initDay, checkOut: finishDay });
+  }, [initialData, visible, rooms]);
 
-  const stillValid = filtered.some(r => r.roomId === room.roomId);
-  if (stillValid) {
-    form.setFieldsValue({ roomId: room.roomId });
-    setSelectedRoomPrice(room.price);
-    calculatePrice(room.price, initDay, finishDay);
-  } else {
-    form.setFieldsValue({ roomId: null }); // ❗️limpiar campo
-    setSelectedRoomPrice(0);
-    setCalculatedValues(null);
-
-    // 🔁 Forzar validación visual del campo
-    setTimeout(() => form.validateFields(["roomId"]), 0);
-  }
-
-  setDates({ checkIn: initDay, checkOut: finishDay });
-}, [initialData, visible, rooms]);
-
-
-  const handleCategoryChange = (categoryId: number) => {
-  const result = rooms.filter(room => room.categoryRoom.categoryRoomId === categoryId);
-  setFilteredRooms(result);
-
-  const currentRoomId = form.getFieldValue("roomId");
-  const stillValid = result.some(room => room.roomId === currentRoomId);
-
-  if (stillValid) {
-    const room = result.find(r => r.roomId === currentRoomId);
-    if (room) {
-      setSelectedRoomPrice(room.price);
-      calculatePrice(room.price, dates.checkIn, dates.checkOut);
+  const handleCategoryFilterChange = (categoryId?: number) => {
+    if (!categoryId) {
+      setFilteredRooms(rooms);
+      return;
     }
-  } else {
-    form.setFieldsValue({ roomId: null }); // 👈 Limpia el campo visualmente
-    setSelectedRoomPrice(0);
-    setCalculatedValues(null);
-    setTimeout(() => form.validateFields(["roomId"]), 0); // 👈 Revalida visualmente
-  }
-};
 
+    const result = rooms.filter(room => room.categoryRoomId === categoryId);
+    setFilteredRooms(result);
+
+    const currentRoomId = form.getFieldValue("roomId");
+    const stillValid = result.some(room => room.roomId === currentRoomId);
+
+    if (!stillValid) {
+      form.setFieldsValue({ roomId: null });
+      setSelectedRoomPrice(0);
+      setCalculatedValues(null);
+      setTimeout(() => form.validateFields(["roomId"]), 0);
+    }
+  };
 
   const handleRoomChange = (roomId: number) => {
     const selectedRoom = rooms.find((r) => r.roomId === roomId);
@@ -195,7 +177,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
         message.success("Reserva guardada exitosamente");
       }
 
-      onSubmit(); // ✅ Ya no se pasan los datos, se evita duplicación
+      onSubmit();
       form.resetFields();
       setDates({});
       setSelectedRoomPrice(0);
@@ -224,17 +206,18 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
       <Form layout="vertical" form={form} onFinish={handleFinish} style={{ paddingTop: 10 }}>
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="name" label="Nombre completo" rules={[{ required: true }, {pattern: /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/, message: "Solo se permiten letras y espacios",},]}>
+            <Form.Item name="name" label="Nombre completo" rules={[
+              { required: true },
+              {
+                pattern: /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/,
+                message: "Solo se permiten letras y espacios",
+              },
+            ]}>
               <Input placeholder="Nombre del cliente" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="phone" label="Teléfono"  rules={[
-              { required: true, message: "El teléfono es obligatorio" },
-              {
-                message: "Formato inválido. Usa 00000000",
-              },
-            ]}>
+            <Form.Item name="phone" label="Teléfono" rules={[{ required: true }]}>
               <Input placeholder="00000000" maxLength={9} />
             </Form.Item>
           </Col>
@@ -242,24 +225,33 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="email" label="Correo electrónico"  rules={[
-                { required: true, message: "El correo es obligatorio" },
-                { type: "email", message: "El formato del correo no es válido" },
-              ]}>
+            <Form.Item name="email" label="Correo electrónico" rules={[
+              { required: true },
+              { type: "email", message: "El formato del correo no es válido" },
+            ]}>
               <Input type="email" placeholder="ejemplo@correo.com" />
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item name="cantPeople" label="Cantidad de personas" rules={[{ required: true }]}>
-              <InputNumber min={1} max={10} style={{ width: "100%" }} />
+              <InputNumber min={1} max={20} style={{ width: "100%" }} />
             </Form.Item>
           </Col>
         </Row>
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="categoryRoomId" label="Categoría" rules={[{ required: true }]}>
-              <Select placeholder="Seleccione una categoría" onChange={handleCategoryChange}>
+            <Form.Item name="quantityReserved" label="Habitaciones reservadas" rules={[{ required: true }]}>
+              <InputNumber min={1} max={10} style={{ width: "100%" }} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="Categoría">
+              <Select
+                placeholder="Filtrar por categoría"
+                onChange={handleCategoryFilterChange}
+                allowClear
+              >
                 {categories.map((cat) => (
                   <Option key={cat.categoryRoomId} value={cat.categoryRoomId}>
                     {cat.nameCategoryEs}
@@ -268,26 +260,26 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
+        </Row>
+
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="roomId" label="Habitación" rules={[{ required: true }]}>
               <Select placeholder="Seleccione una habitación" onChange={handleRoomChange}>
                 {filteredRooms.map((room) => (
                   <Option key={room.roomId} value={room.roomId}>
-                    {room.nameEs}
+                    {room.name}
                   </Option>
                 ))}
               </Select>
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={12}>
+          <Col span={6}>
             <Form.Item name="initDate" label="Fecha de entrada" rules={[{ required: true }]}>
               <DatePicker style={{ width: "100%" }} onChange={(date) => onDateChange("checkIn", date)} />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={6}>
             <Form.Item name="finishDate" label="Fecha de salida" rules={[{ required: true }]}>
               <DatePicker style={{ width: "100%" }} onChange={(date) => onDateChange("checkOut", date)} />
             </Form.Item>

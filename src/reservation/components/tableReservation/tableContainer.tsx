@@ -3,60 +3,70 @@ import { GetReservations } from "../../services/reservationService";
 import { Reservation } from "../../interfaces/Reservation";
 import { TableUI } from "./tableUI";
 
-export const TableContainer = ({ setResults, filters }: { setResults: any; filters: any }) => {
-    const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
+interface ReservationFilters {
+  room?: { name: string };
+  startDate?: string;
+  endDate?: string;
+}
 
-    useEffect(() => {
-        fetchReservations();
-    }, []);
+interface TableContainerProps {
+  setResults: (count: number) => void;
+  filters: ReservationFilters;
+  refresh: boolean;
+}
 
-    useEffect(() => {
-        applyFilters();
-    }, [filters, reservations]);
+export const TableContainer = ({
+  setResults,
+  filters,
+  refresh,
+}: TableContainerProps) => {
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
 
-    //*Obtiene todas las reservas del backend
-    const fetchReservations = async () => {
-        try {
-            const response = await GetReservations();
-            setReservations(response);
-            setResults(response.length);
-        } catch (error) {
-            console.error("Error fetching reservations:", error);
-        }
-    };
+  useEffect(() => {
+    fetchReservations();
+  }, [refresh]);
 
-    //*Aplica los filtros a las reservas
-    const applyFilters = () => {
-        let filtered = reservations;
+  useEffect(() => {
+    applyFilters();
+  }, [filters, reservations]);
 
-        if (filters.room) {
-            filtered = filtered.filter((r) => r.room.nameEs === filters.room.name);
-        }
-        if (filters.category) {
-            filtered = filtered.filter((r) => r.categoryroom.nameCategoryEs === filters.category.name);
-        }
-        if (filters.startDate) {
-            filtered = filtered.filter((r) => {
-                const initDate = new Date(r.initDate[0], r.initDate[1] - 1, r.initDate[2]);
-                return initDate >= new Date(filters.startDate);
-            });
-        }
-        if (filters.endDate) {
-            filtered = filtered.filter((r) => {
-                const finishDate = new Date(r.finishDate[0], r.finishDate[1] - 1, r.finishDate[2]);
-                return finishDate <= new Date(filters.endDate);
-            });
-        }
+  const fetchReservations = async () => {
+    try {
+      const response = await GetReservations();
+      setReservations(response);
+    } catch (error) {
+      console.error("Error al obtener las reservas:", error);
+    }
+  };
 
-        setFilteredReservations(filtered);
-        setResults(filtered.length);
-    };
+  const applyFilters = () => {
+    let filtered = [...reservations];
 
-    return (
-        <TableUI
-            data={filteredReservations}
-            onReservationUpdated={fetchReservations} // 👈 Para actualizar la tabla tras editar o eliminar
-        />
-    );
+    if (filters.room?.name) {
+      filtered = filtered.filter((r) =>
+        r.room?.nameEs?.toLowerCase().includes(filters.room!.name.toLowerCase())
+      );
+    }
+
+    if (filters.startDate) {
+      const start = new Date(filters.startDate);
+      filtered = filtered.filter((r) => new Date(r.initDate) >= start);
+    }
+
+    if (filters.endDate) {
+      const end = new Date(filters.endDate);
+      filtered = filtered.filter((r) => new Date(r.finishDate) <= end);
+    }
+
+    setFilteredReservations(filtered);
+    setResults(filtered.length);
+  };
+
+  return (
+    <TableUI
+      data={filteredReservations}
+      onReservationUpdated={fetchReservations}
+    />
+  );
 };

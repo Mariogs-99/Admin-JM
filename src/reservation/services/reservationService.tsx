@@ -4,61 +4,59 @@ import { Reservation } from "../interfaces/Reservation";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+const getAuthHeaders = () => ({
+  Authorization: `Bearer ${getToken()}`,
+  "Content-Type": "application/json",
+});
+
+// Obtener todas las reservas
 export const GetReservations = async (): Promise<Reservation[]> => {
-    try {
-        const response = await axios.get(
-            `${BASE_URL}/api/reservation/`,
-            {
-                headers: {
-                    Authorization: `Bearer ${getToken()}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-        return response.data;
-    } catch (error) {
-        throw new Error("Error al obtener reservas");
-    }
+  try {
+    const response = await axios.get(`${BASE_URL}/api/reservation/`, {
+      headers: getAuthHeaders(),
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error al obtener reservas:", error.response?.data || error);
+    throw new Error("No se pudieron cargar las reservas");
+  }
 };
 
+// Crear una nueva reserva
 export const SaveReservations = async (body: Reservation): Promise<void> => {
-    try {
-        await axios.post(`${BASE_URL}/api/reservation/`, body, {
-            headers: {
-                Authorization: `Bearer ${getToken()}`,
-                "Content-Type": "application/json",
-            },
-        });
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
+  try {
+    await axios.post(`${BASE_URL}/api/reservation/`, body, {
+      headers: getAuthHeaders(),
+    });
+  } catch (error: any) {
+    console.error("Error al crear la reserva:", error.response?.data || error);
+    throw error;
+  }
 };
 
-export const UpdateReservation = async (id: number, body: Reservation): Promise<void> => {
-    try {
-        await axios.put(`${BASE_URL}/api/reservation/${id}`, body, {
-            headers: {
-                Authorization: `Bearer ${getToken()}`,
-                "Content-Type": "application/json",
-            },
-        });
-    } catch (error) {
-        console.error("Error al actualizar la reserva:", error);
-        throw error;
-    }
+// Actualizar una reserva existente
+export const UpdateReservation = async (
+  id: number,
+  body: Reservation
+): Promise<void> => {
+  try {
+    await axios.put(`${BASE_URL}/api/reservation/${id}`, body, {
+      headers: getAuthHeaders(),
+    });
+  } catch (error: any) {
+    console.error("Error al actualizar la reserva:", error.response?.data || error);
+    throw error;
+  }
 };
 
+// Eliminar una reserva
 export const deleteReservation = async (id: number): Promise<void> => {
-    try {
-        await axios.delete(`${BASE_URL}/api/reservation/${id}`, {
-            headers: {
-                Authorization: `Bearer ${getToken()}`,
-                "Content-Type": "application/json",
-            },
-        });
-    } catch (error) {
-        console.error("Error al eliminar la reserva:", error);
-        throw error;
-    }
+  try {
+    await axios.delete(`${BASE_URL}/api/reservation/${id}`, {
+      headers: getAuthHeaders(),
+    });
+  } catch (error: any) {
+    console.error("Error al eliminar la reserva:", error.response?.data || error);
+    throw error;
+  }
 };
