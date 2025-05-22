@@ -1,55 +1,87 @@
 import { useState } from "react";
-import Input from "../../shared/form/Input"
 import { useNavigate } from "react-router-dom";
+import { Form, Input, Button } from "antd";
 import { login } from "../services/loginService";
+import { LuHotel } from "react-icons/lu"; // Ícono de hotel
 
 export const LoginForm = () => {
-    const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-    const [error, setError] = useState<string | null>(null);
+  const onFinish = async (values: { username: string; password: string }) => {
+    setError(null);
+    setLoading(true);
 
-    const [formData, setFormData] = useState({
-        username: "",
-        password: "",
-    });
+    try {
+      const response = await login(values);
+      localStorage.setItem("token", response.token);
+      navigate("/hotel");
+    } catch {
+      setError("Usuario o contraseña incorrectos.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden">
+        {/* Columna izquierda - Login */}
+        <div className="w-full md:w-1/2 p-10">
+          <div className="text-center mb-6">
+            <LuHotel className="text-[#1e3a8a] text-4xl mx-auto mb-2" />
+            <h2 className="text-2xl font-bold text-[#1e3a8a]">Hotel Jardines de las Marias</h2>
+            <p className="text-gray-500">Inicio de sesión</p>
+          </div>
 
-    const handlerLogin = async (event: React.FormEvent) => {
-        event.preventDefault(); // Evita recarga de página
-        setError(null); // Limpia errores previos
+          {error && (
+            <p className="text-sm text-red-500 text-center mb-4">{error}</p>
+          )}
 
-        try {
-            const response = await login(formData);
-            localStorage.setItem("token", response.token);
+          <Form layout="vertical" onFinish={onFinish} autoComplete="off">
+            <Form.Item
+              label="Usuario"
+              name="username"
+              rules={[{ required: true, message: "Por favor ingresa tu usuario" }]}
+            >
+              <Input size="large" placeholder="Ej. admin" />
+            </Form.Item>
 
-            navigate("/hotel");
-        } catch (err) {
-            setError("Usuario o contraseña incorrectos."); // Manejo de errores
-        }
-    };
+            <Form.Item
+              label="Contraseña"
+              name="password"
+              rules={[{ required: true, message: "Por favor ingresa tu contraseña" }]}
+            >
+              <Input.Password size="large" placeholder="••••••••" />
+            </Form.Item>
 
-    return (
-        <form onSubmit={handlerLogin} className="border border-border rounded-sm flex flex-col gap-7 py-10 px-14 w-[30%] shadow-xl">
-            <span>
-                <h1 className="font-bold text-2xl text-center">Inicio de sesión</h1>
-                {error && <p className="text-red-500 text-center">{error}</p>}
-            </span>
-            <span className="flex flex-col gap-1">
-                <label htmlFor="username" className="font-primary">Nombre</label>
-                <Input name="username" placeholder="usuario" type="text" value={formData.username} onChange={handleChange} />
-            </span>
-            <span className="flex flex-col gap-1">
-                <label htmlFor="password" className="font-primary">Nombre</label>
-                <Input name="password" placeholder="contraseña" type="password" value={formData.password} onChange={handleChange} />
-            </span>
-            <span>
-                <button type="submit" className="w-full bg-blue-500 hover:cursor-pointer hover:bg-blue-400 text-white rounded-sm px-5 py-3">
-                    Iniciar sesión
-                </button>
-            </span>
-        </form>
-    )
-}
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                size="large"
+                block
+                style={{ backgroundColor: "#1e3a8a", borderColor: "#1e3a8a" }}
+              >
+                Iniciar sesión
+              </Button>
+            </Form.Item>
+          </Form>
+        </div>
+
+        {/* Columna derecha - Bienvenida */}
+        <div className="hidden md:flex w-1/2 bg-gradient-to-br from-[#1e3a8a] to-[#3b82f6] text-white flex-col justify-center items-center p-10">
+          <h3 className="text-2xl font-bold mb-4">¡Bienvenido de vuelta!</h3>
+          <p className="text-sm leading-relaxed max-w-sm text-center">
+            Nos alegra verte nuevamente. Inicia sesión para continuar tu experiencia con nosotros. Esperamos que disfrutes tu estancia en Hotel Jardines.
+          </p>
+          <p className="text-sm opacity-80 mt-4">
+            ¿No tienes cuenta? Contacta con administración.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
