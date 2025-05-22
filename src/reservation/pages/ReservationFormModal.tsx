@@ -54,6 +54,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   const [rooms, setRooms] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<any[]>([]);
+  const [selectedRoomInfo, setSelectedRoomInfo] = useState<any | null>(null);
   const [selectedRoomPrice, setSelectedRoomPrice] = useState<number>(0);
   const [dates, setDates] = useState<{ checkIn?: string; checkOut?: string }>({});
   const [calculatedValues, setCalculatedValues] = useState<{
@@ -115,6 +116,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 
     setFilteredRooms(rooms);
     setSelectedRoomPrice(room?.price ?? 0);
+    setSelectedRoomInfo(room ?? null);
     calculatePrice(room?.price, initDay, finishDay);
     setDates({ checkIn: initDay, checkOut: finishDay });
   }, [initialData, visible, rooms]);
@@ -125,7 +127,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
       return;
     }
 
-    const result = rooms.filter(room => room.categoryRoomId === categoryId);
+    const result = rooms.filter(room => room.categoryRoom?.categoryRoomId === categoryId);
     setFilteredRooms(result);
 
     const currentRoomId = form.getFieldValue("roomId");
@@ -133,6 +135,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 
     if (!stillValid) {
       form.setFieldsValue({ roomId: null });
+      setSelectedRoomInfo(null);
       setSelectedRoomPrice(0);
       setCalculatedValues(null);
       setTimeout(() => form.validateFields(["roomId"]), 0);
@@ -142,6 +145,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   const handleRoomChange = (roomId: number) => {
     const selectedRoom = rooms.find((r) => r.roomId === roomId);
     if (selectedRoom) {
+      setSelectedRoomInfo(selectedRoom); // 💡 Nuevo
       setSelectedRoomPrice(selectedRoom.price);
       calculatePrice(selectedRoom.price, dates.checkIn, dates.checkOut);
     }
@@ -190,6 +194,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
       form.resetFields();
       setDates({});
       setSelectedRoomPrice(0);
+      setSelectedRoomInfo(null);
       setCalculatedValues(null);
     } catch (err) {
       message.error("Por favor completa todos los campos obligatorios.");
@@ -201,12 +206,13 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   return (
     <Modal
       open={visible}
-      title={<Title level={5} style={{ margin: 0 }}>{initialData ? "Editar Reserva" : "Nueva Reserva"}</Title>}
+      title={<Title level={5}>{initialData ? "Editar Reserva" : "Nueva Reserva"}</Title>}
       onCancel={() => {
         onCancel();
         form.resetFields();
         setDates({});
         setSelectedRoomPrice(0);
+        setSelectedRoomInfo(null);
         setCalculatedValues(null);
       }}
       footer={null}
@@ -270,6 +276,21 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
+
+          {/* 🆕 Detalle de habitación seleccionada */}
+          {selectedRoomInfo && (
+            <Col span={24}>
+              <Card size="small" style={{ background: "#f9f9f9", marginBottom: 8, borderRadius: 6 }}>
+                <Text>
+                  <b>Habitación seleccionada:</b> {selectedRoomInfo.name}
+                </Text><br />
+                <Text>
+                  <b>Disponibles:</b> {selectedRoomInfo.quantity} habitación{selectedRoomInfo.quantity > 1 ? "es" : ""}
+                </Text>
+              </Card>
+            </Col>
+          )}
+
           <Col span={6}>
             <Form.Item name="initDate" label="Entrada" rules={[{ required: true }]}>
               <DatePicker style={{ width: "100%", ...compactStyle }} onChange={(date) => onDateChange("checkIn", date)} />

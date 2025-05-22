@@ -1,14 +1,14 @@
 export interface Reservation {
   reservationId: number;
   name: string;
-  initDate: string; // Formato ISO: "YYYY-MM-DD"
+  initDate: string; // Fecha como string ISO
   finishDate: string;
   cantPeople: number;
   email: string;
   phone: string;
   payment: number;
   quantityReserved: number;
-  creationDate: string; // Si decides mostrarla
+  creationDate: string; // ahora vendrá en formato válido ISO
   room: {
     roomId: number;
     nameEs: string;

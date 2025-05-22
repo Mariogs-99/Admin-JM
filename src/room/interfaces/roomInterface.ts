@@ -8,9 +8,19 @@ export interface RoomResponse {
   price: number;
   sizeBed: string;
   quantity: number;
-  categoryRoomId: number;
   imageUrl: string | null;
+  categoryRoom: {
+    categoryRoomId: number;
+    nameCategory: string;
+    description: string;
+    bedInfo?: string;
+    roomSize?: string;
+    hasTv?: boolean;
+    hasAc?: boolean;
+    hasPrivateBathroom?: boolean;
+  };
 }
+
 
 // Esta interface se sigue usando para cargar categorías
 export interface CategoryRoom {

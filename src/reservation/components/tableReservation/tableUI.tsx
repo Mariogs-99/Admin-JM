@@ -1,11 +1,20 @@
 import { Table, message, Button } from "antd";
 import { useState } from "react";
 import { SortableTitle } from "../sort/title/sortableTitle";
-import { formatDate } from "../../../utils/formatDate";
 import { ReservationFormModal } from "../../pages/ReservationFormModal";
 import { deleteReservation } from "../../../reservation/services/reservationService";
 import { DeleteConfirmationModal } from "../../pages/DeleteConfirmationModal";
 import { Reservation } from "../../../reservation/interfaces/Reservation";
+
+// Función para convertir un array tipo [2025, 5, 22, 14, 8, 4] a Date
+const parseCreationDate = (value: any): Date => {
+  if (Array.isArray(value) && value.length >= 3) {
+    const [year, month, day, hour = 0, minute = 0, second = 0] = value;
+    return new Date(year, month - 1, day, hour, minute, second);
+  }
+  const parsed = new Date(value);
+  return isNaN(parsed.getTime()) ? new Date(0) : parsed;
+};
 
 interface TableUIProps {
   data: Reservation[];
@@ -92,7 +101,7 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       ),
       dataIndex: "initDate",
       key: "initDate",
-      render: formatDate,
+      render: (date: any) => new Date(date).toLocaleDateString("es-ES"),
       sorter: (a: Reservation, b: Reservation) =>
         new Date(a.initDate).getTime() - new Date(b.initDate).getTime(),
     },
@@ -105,7 +114,7 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       ),
       dataIndex: "finishDate",
       key: "finishDate",
-      render: formatDate,
+      render: (date: any) => new Date(date).toLocaleDateString("es-ES"),
       sorter: (a: Reservation, b: Reservation) =>
         new Date(a.finishDate).getTime() - new Date(b.finishDate).getTime(),
     },
@@ -163,9 +172,12 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       ),
       dataIndex: "creationDate",
       key: "creationDate",
-      render: formatDate,
+      render: (value: any) => {
+        const date = parseCreationDate(value);
+        return date.toLocaleString("es-ES");
+      },
       sorter: (a: Reservation, b: Reservation) =>
-        new Date(a.creationDate).getTime() - new Date(b.creationDate).getTime(),
+        parseCreationDate(a.creationDate).getTime() - parseCreationDate(b.creationDate).getTime(),
     },
     {
       title: "Acciones",
