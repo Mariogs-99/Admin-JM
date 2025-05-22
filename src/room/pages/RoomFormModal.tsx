@@ -89,15 +89,16 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
   };
 
   const inputStyle = {
-    padding: "10px",
-    borderRadius: "8px",
+    height: 36,
+    borderRadius: 6,
+    paddingInline: 10,
   };
 
   return (
     <Modal
       open={visible}
       title={
-        <Title level={4} style={{ margin: 0 }}>
+        <Title level={5} style={{ margin: 0 }}>
           {initialData ? "Editar habitación" : "Nueva habitación"}
         </Title>
       }
@@ -107,50 +108,28 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
       }}
       footer={null}
       centered
+      width={640}
     >
-      <Form
-        layout="vertical"
-        form={form}
-        onFinish={handleFinish}
-        style={{ marginTop: 16 }}
-      >
-        <Row gutter={16}>
+      <Form layout="vertical" form={form} onFinish={handleFinish} style={{ marginTop: 8 }}>
+        <Row gutter={[12, 8]}>
           <Col span={12}>
-            <Form.Item
-              name="nameEs"
-              label="Nombre"
-              rules={[{ required: true, message: "Campo requerido" }]}
-            >
-              <Input placeholder="Ej. Habitación 101" allowClear style={inputStyle} />
+            <Form.Item name="nameEs" label="Nombre" rules={[{ required: true }]}>
+              <Input placeholder="Ej. Habitación 101" style={inputStyle} />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              name="quantity"
-              label="Cantidad de cuartos disponibles"
-              rules={[{ required: true, message: "Campo requerido" }]}
-            >
+            <Form.Item name="quantity" label="Cantidad de cuartos disponible" rules={[{ required: true }]}>
               <InputNumber min={0} style={{ width: "100%", ...inputStyle }} />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row gutter={16}>
           <Col span={12}>
-            <Form.Item
-              name="maxCapacity"
-              label="Capacidad Maxima de huespedes"
-              rules={[{ required: true, message: "Campo requerido" }]}
-            >
+            <Form.Item name="maxCapacity" label="Capacidad máxima" rules={[{ required: true }]}>
               <InputNumber min={1} max={10} style={{ width: "100%", ...inputStyle }} />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              name="price"
-              label="Precio"
-              rules={[{ required: true, message: "Campo requerido" }]}
-            >
+            <Form.Item name="price" label="Precio por noche" rules={[{ required: true }]}>
               <InputNumber
                 min={0}
                 step={0.01}
@@ -160,29 +139,15 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
               />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row gutter={16}>
           <Col span={12}>
-            <Form.Item
-              name="sizeBed"
-              label="Tamaño de cama"
-              rules={[{ required: true, message: "Campo requerido" }]}
-            >
-              <Input placeholder="Ej. 1.5 mt" allowClear style={inputStyle} />
+            <Form.Item name="sizeBed" label="Tamaño de cama" rules={[{ required: true }]}>
+              <Input placeholder="Ej. Queen" style={inputStyle} />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              name="categoryRoomId"
-              label="Categoría"
-              rules={[{ required: true, message: "Campo requerido" }]}
-            >
-              <Select
-                placeholder="Selecciona categoría"
-                allowClear
-                style={{ width: "100%", minHeight: 40, borderRadius: 8 }}
-              >
+            <Form.Item name="categoryRoomId" label="Categoría" rules={[{ required: true }]}>
+              <Select placeholder="Selecciona una categoría" style={{ ...inputStyle, width: "100%" }}>
                 {categories.map((cat) => (
                   <Option key={cat.categoryRoomId} value={cat.categoryRoomId}>
                     {cat.nameCategoryEs}
@@ -195,10 +160,9 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
 
         <Form.Item name="descriptionEs" label="Descripción">
           <Input.TextArea
-            rows={3}
-            style={{ borderRadius: 8, padding: 10 }}
-            placeholder="Descripción de la habitación"
-            autoSize={{ minRows: 3, maxRows: 5 }}
+            placeholder="Descripción breve de la habitación"
+            style={{ borderRadius: 6, padding: 10 }}
+            autoSize={{ minRows: 2, maxRows: 4 }}
           />
         </Form.Item>
 
@@ -215,29 +179,22 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
           <Upload
             accept="image/*"
             maxCount={1}
-            showUploadList={true}
+            showUploadList
             beforeUpload={() => false}
           >
-            <Button icon={<UploadOutlined />}>Seleccionar Imagen</Button>
+            <Button icon={<UploadOutlined />} size="middle">
+              Seleccionar imagen
+            </Button>
           </Upload>
         </Form.Item>
 
-        <Row justify="end" gutter={8}>
-          <Col>
-            <Button onClick={onCancel} style={{ borderRadius: 6 }}>
-              Cancelar
-            </Button>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              style={{ borderRadius: 6 }}
-            >
-              {initialData ? "Actualizar" : "Guardar"}
-            </Button>
-          </Col>
+        <Row justify="end" style={{ marginTop: 8 }}>
+          <Button onClick={onCancel} style={{ marginRight: 8, borderRadius: 6 }}>
+            Cancelar
+          </Button>
+          <Button type="primary" htmlType="submit" loading={loading} style={{ borderRadius: 6 }}>
+            {initialData ? "Actualizar" : "Guardar"}
+          </Button>
         </Row>
       </Form>
     </Modal>

@@ -9,16 +9,20 @@ import {
   Button,
   message,
   Select,
+  Typography,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { SaveEvent, UpdateEventWithImage } from "../services/eventServices";
 
+const { Title } = Typography;
+const { Option } = Select;
+
 interface EventFormModalProps {
   visible: boolean;
   onClose: () => void;
   onSaved: () => void;
-  initialData?: any; // para modo edición
+  initialData?: any;
 }
 
 export const EventFormModal: FC<EventFormModalProps> = ({
@@ -39,7 +43,7 @@ export const EventFormModal: FC<EventFormModalProps> = ({
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({ active: true }); // valor por defecto
+      form.setFieldsValue({ active: true });
     }
   }, [visible, initialData]);
 
@@ -84,41 +88,59 @@ export const EventFormModal: FC<EventFormModalProps> = ({
     }
   };
 
+  const inputStyle = { height: 36, borderRadius: 6, paddingInline: 10 };
+
   return (
     <Modal
-      title={initialData ? "Editar evento" : "Agregar nuevo evento"}
+      title={
+        <Title level={5} style={{ margin: 0 }}>
+          {initialData ? "Editar evento" : "Agregar nuevo evento"}
+        </Title>
+      }
       open={visible}
       onCancel={onClose}
-      onOk={handleSubmit}
-      confirmLoading={loading}
-      okText={initialData ? "Actualizar" : "Guardar"}
-      cancelText="Cancelar"
+      footer={null}
+      centered
+      width={600}
     >
-      <Form layout="vertical" form={form}>
+      <Form layout="vertical" form={form} onFinish={handleSubmit} style={{ marginTop: 8 }}>
         <Form.Item name="title" label="Título" rules={[{ required: true }]}>
-          <Input />
+          <Input placeholder="Nombre del evento" style={inputStyle} />
         </Form.Item>
 
         <Form.Item name="description" label="Descripción" rules={[{ required: true }]}>
-          <Input.TextArea rows={3} />
+          <Input.TextArea
+            placeholder="Breve descripción"
+            style={{ borderRadius: 6, padding: 10 }}
+            autoSize={{ minRows: 2, maxRows: 4 }}
+          />
         </Form.Item>
 
         <Form.Item name="eventDate" label="Fecha del evento" rules={[{ required: true }]}>
-          <DatePicker format="YYYY-MM-DD" className="w-full" />
+          <DatePicker
+            format="YYYY-MM-DD"
+            style={{ width: "100%", ...inputStyle }}
+          />
         </Form.Item>
 
         <Form.Item name="capacity" label="Capacidad" rules={[{ required: true }]}>
-          <InputNumber min={1} className="w-full" />
+          <InputNumber min={1} style={{ width: "100%", ...inputStyle }} />
         </Form.Item>
 
         <Form.Item name="price" label="Precio ($)" rules={[{ required: true }]}>
-          <InputNumber min={0} step={0.01} className="w-full" />
+          <InputNumber
+            min={0}
+            step={0.01}
+            style={{ width: "100%", ...inputStyle }}
+            formatter={(value) => `$ ${value}`}
+            parser={((value?: string) => (value ? value.replace(/[^\d.]/g, "") : "")) as any}
+          />
         </Form.Item>
 
         <Form.Item name="active" label="Estado" rules={[{ required: true }]}>
-          <Select>
-            <Select.Option value={true}>Activo</Select.Option>
-            <Select.Option value={false}>Inactivo</Select.Option>
+          <Select style={inputStyle}>
+            <Option value={true}>Activo</Option>
+            <Option value={false}>Inactivo</Option>
           </Select>
         </Form.Item>
 
@@ -139,12 +161,23 @@ export const EventFormModal: FC<EventFormModalProps> = ({
           <Upload
             accept="image/*"
             maxCount={1}
-            showUploadList={true}
+            showUploadList
             beforeUpload={() => false}
           >
-            <Button icon={<UploadOutlined />}>Seleccionar imagen</Button>
+            <Button icon={<UploadOutlined />} size="middle">
+              Seleccionar imagen
+            </Button>
           </Upload>
         </Form.Item>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+          <Button onClick={onClose} style={{ borderRadius: 6 }}>
+            Cancelar
+          </Button>
+          <Button type="primary" htmlType="submit" loading={loading} style={{ borderRadius: 6 }}>
+            {initialData ? "Actualizar" : "Guardar"}
+          </Button>
+        </div>
       </Form>
     </Modal>
   );

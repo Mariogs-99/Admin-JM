@@ -29,11 +29,16 @@ interface ReservationFormModalProps {
   initialData?: any;
 }
 
-const calculateReservation = (price: number, checkIn: string, checkOut: string) => {
+const calculateReservation = (
+  price: number,
+  checkIn: string,
+  checkOut: string,
+  quantity: number = 1
+) => {
   const checkInDate = new Date(checkIn);
   const checkOutDate = new Date(checkOut);
   const numberOfNights = Math.max(0, (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-  const subtotal = price * numberOfNights;
+  const subtotal = price * numberOfNights * quantity;
   const IVA = subtotal * 0.10;
   const total = subtotal + IVA;
   return { numberOfNights, subtotal, IVA, total };
@@ -150,14 +155,18 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   };
 
   const calculatePrice = (price: number, checkIn?: string, checkOut?: string) => {
+    const quantity = form.getFieldValue("quantityReserved") || 1;
+
     if (price && checkIn && checkOut) {
-      const values = calculateReservation(price, checkIn, checkOut);
+      const values = calculateReservation(price, checkIn, checkOut, quantity);
       form.setFieldsValue({ payment: parseFloat(values.total.toFixed(2)) });
       setCalculatedValues(values);
     } else {
       setCalculatedValues(null);
     }
   };
+
+  const compactStyle = { height: 36, borderRadius: 6, paddingInline: 8 };
 
   const handleFinish = async (values: any) => {
     if (loading) return;
@@ -192,7 +201,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   return (
     <Modal
       open={visible}
-      title={<Title level={4}>{initialData ? "Editar Reserva" : "Nueva Reserva"}</Title>}
+      title={<Title level={5} style={{ margin: 0 }}>{initialData ? "Editar Reserva" : "Nueva Reserva"}</Title>}
       onCancel={() => {
         onCancel();
         form.resetFields();
@@ -202,56 +211,45 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
       }}
       footer={null}
       centered
+      width={680}
     >
-      <Form layout="vertical" form={form} onFinish={handleFinish} style={{ paddingTop: 10 }}>
-        <Row gutter={16}>
+      <Form layout="vertical" form={form} onFinish={handleFinish} style={{ marginTop: 8 }}>
+        <Row gutter={[12, 8]}>
           <Col span={12}>
-            <Form.Item name="name" label="Nombre completo" rules={[
-              { required: true },
-              {
-                pattern: /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/,
-                message: "Solo se permiten letras y espacios",
-              },
-            ]}>
-              <Input placeholder="Nombre del cliente" />
+            <Form.Item name="name" label="Nombre completo" rules={[{ required: true }]}>
+              <Input style={compactStyle} placeholder="Nombre del cliente" />
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item name="phone" label="Teléfono" rules={[{ required: true }]}>
-              <Input placeholder="00000000" maxLength={9} />
+              <Input style={compactStyle} maxLength={9} placeholder="00000000" />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="email" label="Correo electrónico" rules={[
-              { required: true },
-              { type: "email", message: "El formato del correo no es válido" },
-            ]}>
-              <Input type="email" placeholder="ejemplo@correo.com" />
+            <Form.Item name="email" label="Correo electrónico" rules={[{ required: true, type: "email" }]}>
+              <Input style={compactStyle} placeholder="ejemplo@correo.com" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="cantPeople" label="Cantidad de personas" rules={[{ required: true }]}>
-              <InputNumber min={1} max={20} style={{ width: "100%" }} />
+            <Form.Item name="cantPeople" label="Personas" rules={[{ required: true }]}>
+              <InputNumber min={1} max={20} style={{ width: "100%", ...compactStyle }} />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="quantityReserved" label="Habitaciones reservadas" rules={[{ required: true }]}>
-              <InputNumber min={1} max={10} style={{ width: "100%" }} />
+            <Form.Item name="quantityReserved" label="Habitaciones" rules={[{ required: true }]}>
+              <InputNumber
+                min={1}
+                max={10}
+                style={{ width: "100%", ...compactStyle }}
+                onChange={() => calculatePrice(selectedRoomPrice, dates.checkIn, dates.checkOut)}
+              />
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item label="Categoría">
-              <Select
-                placeholder="Filtrar por categoría"
-                onChange={handleCategoryFilterChange}
-                allowClear
-              >
+              <Select placeholder="Filtrar categoría" onChange={handleCategoryFilterChange} allowClear style={compactStyle}>
                 {categories.map((cat) => (
                   <Option key={cat.categoryRoomId} value={cat.categoryRoomId}>
                     {cat.nameCategoryEs}
@@ -260,12 +258,10 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="roomId" label="Habitación" rules={[{ required: true }]}>
-              <Select placeholder="Seleccione una habitación" onChange={handleRoomChange}>
+              <Select placeholder="Selecciona habitación" onChange={handleRoomChange} style={compactStyle}>
                 {filteredRooms.map((room) => (
                   <Option key={room.roomId} value={room.roomId}>
                     {room.name}
@@ -275,47 +271,51 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
             </Form.Item>
           </Col>
           <Col span={6}>
-            <Form.Item name="initDate" label="Fecha de entrada" rules={[{ required: true }]}>
-              <DatePicker style={{ width: "100%" }} onChange={(date) => onDateChange("checkIn", date)} />
+            <Form.Item name="initDate" label="Entrada" rules={[{ required: true }]}>
+              <DatePicker style={{ width: "100%", ...compactStyle }} onChange={(date) => onDateChange("checkIn", date)} />
             </Form.Item>
           </Col>
           <Col span={6}>
-            <Form.Item name="finishDate" label="Fecha de salida" rules={[{ required: true }]}>
-              <DatePicker style={{ width: "100%" }} onChange={(date) => onDateChange("checkOut", date)} />
+            <Form.Item name="finishDate" label="Salida" rules={[{ required: true }]}>
+              <DatePicker style={{ width: "100%", ...compactStyle }} onChange={(date) => onDateChange("checkOut", date)} />
             </Form.Item>
           </Col>
         </Row>
 
-        <Divider />
+        <Divider style={{ margin: "12px 0" }} />
 
-        <Form.Item
-          name="payment"
-          label={<Text strong>Monto total con IVA</Text>}
-          rules={[{ required: true }]}
-        >
+        <Form.Item name="payment" label={<Text strong>Total con IVA</Text>} rules={[{ required: true }]}>
           <InputNumber
-            min={0}
             disabled
-            style={{ width: "100%", fontWeight: "bold", background: "#f9f9f9" }}
+            style={{
+              width: "100%",
+              fontWeight: "bold",
+              fontSize: "16px",
+              color: "#000",
+              borderRadius: 6,
+              border: "1px solid #d9d9d9",
+              background: "transparent",
+            }}
             formatter={(value) => `$ ${value}`}
             parser={(value?: string) => parseFloat((value || "0").replace(/\$\s?|(,*)/g, ""))}
           />
         </Form.Item>
 
         {calculatedValues && (
-          <Card size="small" style={{ background: "#fafafa", marginTop: 10 }}>
-            <Text>Precio por noche: <b>${selectedRoomPrice.toFixed(2)}</b></Text><br />
+          <Card size="small" style={{ background: "#fcfcfc", borderRadius: 6, marginTop: 8 }}>
+            <Text>Precio/noche: <b>${selectedRoomPrice.toFixed(2)}</b></Text><br />
             <Text>Noches: <b>{calculatedValues.numberOfNights}</b></Text><br />
+            <Text>Habitaciones reservadas: <b>{form.getFieldValue("quantityReserved") || 1}</b></Text><br />
             <Text>Subtotal: <b>${calculatedValues.subtotal.toFixed(2)}</b></Text><br />
             <Text>IVA (10%): <b>${calculatedValues.IVA.toFixed(2)}</b></Text>
           </Card>
         )}
 
-        <Row justify="end" style={{ marginTop: 20 }}>
-          <Button onClick={onCancel} style={{ marginRight: 8 }}>
+        <Row justify="end" style={{ marginTop: 16 }}>
+          <Button onClick={onCancel} style={{ marginRight: 8, borderRadius: 6 }}>
             Cancelar
           </Button>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button type="primary" htmlType="submit" loading={loading} style={{ borderRadius: 6 }}>
             {initialData ? "Actualizar" : "Guardar"}
           </Button>
         </Row>

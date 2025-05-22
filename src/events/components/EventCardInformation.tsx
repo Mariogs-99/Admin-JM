@@ -61,7 +61,7 @@ export const EventCardInformation = ({
       ),
       dataIndex: 'description',
       key: 'description',
-      ellipsis: true,
+      // eliminamos ellipsis para permitir texto completo
     },
     {
       title: () => (
@@ -144,11 +144,14 @@ export const EventCardInformation = ({
   };
 
   return (
-    <Table
-      dataSource={data.map((item) => ({ ...item, key: item.id }))}
-      columns={columns}
-      pagination={{ pageSize: 6 }}
-      onChange={handleChange}
-    />
+    <div style={{ width: "100%", padding: "0 16px" }}>
+      <Table
+        dataSource={data.map((item) => ({ ...item, key: item.id }))}
+        columns={columns}
+        pagination={{ pageSize: 6 }}
+        onChange={handleChange}
+        
+      />
+    </div>
   );
 };
