@@ -267,21 +267,35 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="cantPeople" label="Personas" rules={[{ required: true }]}>
-              <InputNumber
-                min={1}
-                max={20}
-                style={{ width: "100%", ...compactStyle }}
-                onChange={(value) => {
-                  if (value !== null) {
-                    setCantPeople(value);
-                    if (dates.checkIn && dates.checkOut) {
-                      fetchAvailableRooms(dates.checkIn, dates.checkOut, value);
-                    }
+           <Form.Item name="cantPeople" label="Personas" rules={[{ required: true }]}>
+            <InputNumber
+              min={1}
+              max={20}
+              style={{ width: "100%", ...compactStyle }}
+              onChange={(value) => {
+                if (value !== null) {
+                  setCantPeople(value);
+
+                  // Limpiar campos relacionados
+                  form.setFieldsValue({
+                    roomId: undefined,
+                  });
+
+                  setSelectedCategoryId(null);
+                  setSelectedRoomInfo(null);
+                  setSelectedRoomPrice(0);
+                  setCalculatedValues(null);
+                  setFilteredRooms([]);
+
+                  // Volver a cargar habitaciones disponibles
+                  if (dates.checkIn && dates.checkOut) {
+                    fetchAvailableRooms(dates.checkIn, dates.checkOut, value);
                   }
-                }}
-              />
-            </Form.Item>
+                }
+              }}
+            />
+          </Form.Item>
+
           </Col>
 
           <Col span={24}>
