@@ -60,3 +60,30 @@ export const deleteReservation = async (id: number): Promise<void> => {
     throw error;
   }
 };
+
+
+// Obtener habitaciones disponibles según fechas y cantidad de personas
+export const GetAvailableRooms = async (
+  initDate: string,
+  finishDate: string,
+  cantPeople: number
+): Promise<any[]> => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/api/reservation/available-rooms`,
+      {
+        headers: getAuthHeaders(),
+        params: {
+          initDate,
+          finishDate,
+          cantPeople,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error al obtener habitaciones disponibles:", error.response?.data || error);
+    throw new Error("No se pudieron cargar las habitaciones disponibles");
+  }
+};
+
