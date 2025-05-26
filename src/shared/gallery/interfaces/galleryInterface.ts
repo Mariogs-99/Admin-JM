@@ -1,12 +1,9 @@
-interface Category {
-    categoryId: number;
-    name: string;
-    img: string | null;
-}
-
 export interface GalleryItem {
-    galleryId: number;
-    nameImg: string;
-    path: string;
-    category: Category;
+  galleryId: number;
+  title: string;
+  description: string;
+  imageUrl: string;     // esto es lo que se guarda como `/uploads/archivo.jpg`
+  position: number;
+  active: boolean;
+  createdAt: string;    // opcional, si quieres mostrar la fecha
 }
