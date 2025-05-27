@@ -1,28 +1,51 @@
 import { useState } from "react";
-import Input from "../../shared/form/Input";
+import { Button } from "antd";
+import { RestaurantTableAdmin } from "../pages/RestaurantTableAdmin";
+import { RestaurantFormModal } from "../pages/RestaurantFormModal";
+import { Restaurant } from "../interfaces/restaurantInterface";
 
 export const RestaurantSectionForm = () => {
-    const [formData, setFormData] = useState({
-        horarios: "",
-        menu: "",
-    });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+  const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(e)
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-    
+  const handleOpenModal = () => {
+    setEditingRestaurant(null); // modo agregar
+    setIsModalOpen(true);
+  };
 
-    return (
-        <form action="submit" className="flex flex-col gap-7 py-10">
-            <span className="flex flex-col gap-1">
-                <label htmlFor="horarios" className="font-primary">Horarios</label>
-                <Input name="horarios" placeholder="Horarios" type="text" value={formData.horarios} onChange={handleChange} />
-            </span>
-            <span className="flex flex-col gap-1">
-                <label htmlFor="menu" className="font-primary">Menu</label>
-                <Input name="menu" placeholder="Dirección url google maps" type="file" value={formData.menu} onChange={handleChange} />
-            </span>
-        </form>
-    )
-}
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingRestaurant(null);
+  };
+
+  const handleSuccess = () => {
+    setRefresh(!refresh); // fuerza recarga de tabla
+    handleCloseModal();
+  };
+
+  const handleEdit = (restaurant: Restaurant) => {
+    setEditingRestaurant(restaurant); // modo editar
+    setIsModalOpen(true);
+  };
+
+  return (
+    <section className="px-6 py-10">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Restaurantes registrados</h2>
+        <Button type="primary" onClick={handleOpenModal}>
+          Agregar restaurante
+        </Button>
+      </div>
+
+      <RestaurantTableAdmin refresh={refresh} onEdit={handleEdit} />
+
+      <RestaurantFormModal
+        visible={isModalOpen}
+        onClose={handleCloseModal}
+        onSuccess={handleSuccess}
+        initialData={editingRestaurant}
+      />
+    </section>
+  );
+};
