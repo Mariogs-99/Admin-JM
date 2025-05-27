@@ -39,11 +39,12 @@ export const RoomList = ({
       const rooms = await GetRooms();
       setResults(rooms.length);
 
-      const formattedRooms = rooms.map((room: any) => ({
-        ...room,
-        key: room.roomId,
-        imageUrl: room.imageUrl ? `/${room.imageUrl}` : "/img/default.jpg",
-      }));
+    const formattedRooms = rooms.map((room: any) => ({
+      ...room,
+      key: room.roomId,
+      imageUrl: room.imageUrl || "/img/default.jpg", // ✅ sin anteponer slash
+    }));
+
 
       setRoomList(formattedRooms);
       setOriginalRoomList(formattedRooms);

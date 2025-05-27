@@ -182,11 +182,13 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   };
 
   const getRoomsToDisplay = () => {
-    if (!selectedCategoryId) return filteredRooms;
-    return filteredRooms.filter(
-      (room) => room.categoryRoom?.categoryRoomId === selectedCategoryId
-    );
-  };
+  return filteredRooms.filter((room) => {
+    const matchCategory = !selectedCategoryId || room.categoryRoom?.categoryRoomId === selectedCategoryId;
+    const matchCapacity = !cantPeople || room.maxCapacity >= cantPeople;
+    return matchCategory && matchCapacity;
+  });
+};
+
 
   const compactStyle = { height: 36, borderRadius: 6, paddingInline: 8 };
   const [backendError, setBackendError] = useState<string | null>(null);
@@ -299,22 +301,33 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
           </Col>
 
           <Col span={24}>
-            <Form.Item label="Filtrar por categoría">
-             <Select
-                  allowClear
-                  placeholder="Selecciona categoría"
-                  style={compactStyle}
-                  value={selectedCategoryId ?? undefined}
-                  onChange={(value) => setSelectedCategoryId(value ?? null)}
-                >
+           <Form.Item label="Filtrar por categoría">
+            <Select
+              allowClear
+              placeholder="Selecciona categoría"
+              style={compactStyle}
+              onChange={(value) => {
+                setSelectedCategoryId(value ?? null);
 
-                {categories.map(cat => (
-                  <Option key={cat.categoryRoomId} value={cat.categoryRoomId}>
-                    {cat.nameCategoryEs}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+                // Reaplica el filtro por cantPeople también
+                if (dates.checkIn && dates.checkOut && cantPeople) {
+                  fetchAvailableRooms(dates.checkIn, dates.checkOut, cantPeople);
+                }
+
+                // Limpia selección anterior si cambia la categoría
+                form.setFieldsValue({ roomId: null });
+                setSelectedRoomInfo(null);
+                setSelectedRoomPrice(0);
+              }}
+            >
+              {categories.map(cat => (
+                <Option key={cat.categoryRoomId} value={cat.categoryRoomId}>
+                  {cat.nameCategoryEs}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
           </Col>
 
           <Col span={24}>

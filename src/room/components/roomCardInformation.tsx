@@ -3,7 +3,7 @@ import { Table, Button, Space, Image } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { SortableTitle } from '../../reservation/components/sort/title/sortableTitle';
 
-const IMAGE_BASE_URL = 'http://localhost:8080';
+
 
 export const RoomCardInformation = ({
   data,
@@ -17,23 +17,26 @@ export const RoomCardInformation = ({
   const [sortedInfo, setSortedInfo] = useState<any>({});
 
   const columns = [
-    {
-      title: "Imagen",
-      key: "image",
-      render: (_: any, record: any) => (
+   {
+    title: "Imagen",
+    key: "image",
+    render: (_: any, record: any) => {
+      console.log("🧪 Admin imageUrl:", record.imageUrl);
+      
+      return (
         <Image
-          src={
-            record.imageUrl
-              ? `${IMAGE_BASE_URL.replace(/\/$/, "")}/${record.imageUrl.replace(/^\//, "")}`
-              : "/img/default.jpg"
-          }
+          src={record.imageUrl?.startsWith("http") ? record.imageUrl : "/img/default.jpg"}
           width={60}
           height={60}
           alt="Room"
           style={{ objectFit: "cover", borderRadius: 8 }}
         />
-      ),
+      );
     },
+  },
+
+
+
     {
       title: () => (
         <SortableTitle
@@ -123,5 +126,8 @@ export const RoomCardInformation = ({
       pagination={{ pageSize: 6 }}
       onChange={handleChange}
     />
+
+    
   );
+  
 };
