@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { Modal, message, Switch, Upload, Button } from "antd";
 import Input from "../../shared/form/Input";
 import { UploadOutlined } from "@ant-design/icons";
-import { SaveRestaurant, UpdateRestaurantWithFiles } from "../services/restaurantService";
+import {
+  SaveRestaurant,
+  UpdateRestaurantWithFiles,
+} from "../services/restaurantService";
 import { Restaurant } from "../interfaces/restaurantInterface";
 
 interface Props {
   visible: boolean;
   onClose: () => void;
   initialData?: Restaurant | null;
-  onSuccess?: () => void; // ✅ soporte para prop opcional onSuccess
+  onSuccess?: () => void;
 }
 
 export const RestaurantFormModal = ({
@@ -53,7 +56,7 @@ export const RestaurantFormModal = ({
     });
   };
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -91,7 +94,7 @@ export const RestaurantFormModal = ({
 
       resetForm();
       onClose();
-      onSuccess?.(); // ✅ llama onSuccess si fue proporcionado
+      onSuccess?.();
     } catch (err) {
       console.error(err);
       message.error("Error al guardar el restaurante");
@@ -109,58 +112,84 @@ export const RestaurantFormModal = ({
       onOk={handleSubmit}
       okText="Guardar"
       cancelText="Cancelar"
+      destroyOnClose
     >
-      <div className="flex flex-col gap-4 mt-2">
-        <Input
-          name="name"
-          placeholder="Nombre del restaurante"
-          value={formData.name}
-          onChange={handleTextChange}
-        />
-        <Input
-          name="description"
-          placeholder="Descripción"
-          value={formData.description}
-          onChange={handleTextChange}
-        />
-        <Input
-          name="schedule"
-          placeholder="Horarios"
-          value={formData.schedule}
-          onChange={handleTextChange}
-        />
+      <div className="flex flex-col gap-5 py-2">
+        {/* Nombre */}
+        <div className="flex flex-col gap-1">
+          <label className="font-medium">Nombre del restaurante</label>
+          <Input
+            name="name"
+            placeholder="Ej: Restaurante El Mirador"
+            value={formData.name}
+            onChange={handleTextChange}
+          />
+        </div>
 
-        <Upload
-          beforeUpload={(file) => {
-            setFormData((prev) => ({ ...prev, image: file }));
-            return false;
-          }}
-          showUploadList={false}
-          accept="image/*"
-        >
-          <Button icon={<UploadOutlined />}>Subir imagen</Button>
-        </Upload>
-        {formData.image && (
-          <span className="text-sm text-gray-500">{formData.image.name}</span>
-        )}
+        {/* Descripción */}
+        <div className="flex flex-col gap-1">
+          <label className="font-medium">Descripción</label>
+          <textarea
+            name="description"
+            placeholder="Breve descripción del restaurante"
+            value={formData.description}
+            onChange={handleTextChange}
+            className="border border-gray-300 rounded px-3 py-2 font-sans resize-none"
+            rows={3}
+          />
+        </div>
 
-        <Upload
-          beforeUpload={(file) => {
-            setFormData((prev) => ({ ...prev, pdf: file }));
-            return false;
-          }}
-          showUploadList={false}
-          accept=".pdf"
-        >
-          <Button icon={<UploadOutlined />}>Subir menú (PDF)</Button>
-        </Upload>
-        {formData.pdf && (
-          <span className="text-sm text-gray-500">{formData.pdf.name}</span>
-        )}
+        {/* Horarios */}
+        <div className="flex flex-col gap-1">
+          <label className="font-medium">Horarios</label>
+          <Input
+            name="schedule"
+            placeholder="Lunes a Domingo de 8:00am - 10:00pm"
+            value={formData.schedule}
+            onChange={handleTextChange}
+          />
+        </div>
 
-        <div className="flex items-center gap-2">
+        {/* ¿Destacado? */}
+        <div className="flex items-center gap-3">
           <label className="font-medium">¿Destacado?</label>
           <Switch checked={formData.highlighted} onChange={handleSwitchChange} />
+        </div>
+
+        {/* Imagen */}
+        <div className="flex flex-col gap-1">
+          <label className="font-medium">Imagen del restaurante</label>
+          <Upload
+            beforeUpload={(file) => {
+              setFormData((prev) => ({ ...prev, image: file }));
+              return false;
+            }}
+            showUploadList={false}
+            accept="image/*"
+          >
+            <Button icon={<UploadOutlined />}>Seleccionar imagen</Button>
+          </Upload>
+          {formData.image && (
+            <span className="text-sm text-gray-500">{formData.image.name}</span>
+          )}
+        </div>
+
+        {/* Menú PDF */}
+        <div className="flex flex-col gap-1">
+          <label className="font-medium">Menú en PDF</label>
+          <Upload
+            beforeUpload={(file) => {
+              setFormData((prev) => ({ ...prev, pdf: file }));
+              return false;
+            }}
+            showUploadList={false}
+            accept=".pdf"
+          >
+            <Button icon={<UploadOutlined />}>Seleccionar PDF</Button>
+          </Upload>
+          {formData.pdf && (
+            <span className="text-sm text-gray-500">{formData.pdf.name}</span>
+          )}
         </div>
       </div>
     </Modal>
