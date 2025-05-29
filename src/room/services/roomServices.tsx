@@ -1,4 +1,3 @@
-// roomServices.ts
 
 import axios from "axios";
 import { RoomResponse, CategoryRoom } from "../interfaces/roomInterface";
