@@ -62,7 +62,7 @@ export const FilterContainer = ({ results, setFilters, onAdd }: FilterContainerP
       }
       setRoomsList(
         fetchRooms.map((room) => ({
-          name: room.nameEs,
+          name: room.name,
           code: room.roomId,
         }))
       );

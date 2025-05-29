@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Title } from "../../shared/text/title";
 import { CategoryCard } from "../components/categoryCard";
-import { Button, message } from "antd";
+import { message } from "antd";
 import {
   getAllCategoriesRoom,
   deleteCategoryRoom,
@@ -15,7 +15,6 @@ export const CategoryPage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryRoom | null>(null);
 
-  // Nuevo: para eliminar
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleteVisible, setDeleteVisible] = useState(false);
 
@@ -55,15 +54,15 @@ export const CategoryPage = () => {
     <>
       <div className="flex justify-between items-center mb-5">
         <Title>Tipos de habitación</Title>
-        <Button
-          type="primary"
+        <button
           onClick={() => {
             setEditingCategory(null);
             setModalVisible(true);
           }}
+          className="bg-[#b49a7b] hover:bg-[#a67c52] active:bg-[#946846] text-white px-6 py-2 rounded-md transition-colors duration-200"
         >
           Agregar Categoría
-        </Button>
+        </button>
       </div>
 
       <div>

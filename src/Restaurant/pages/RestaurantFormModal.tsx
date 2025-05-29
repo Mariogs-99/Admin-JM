@@ -113,17 +113,30 @@ export const RestaurantFormModal = ({
       okText="Guardar"
       cancelText="Cancelar"
       destroyOnClose
+      width={700}
     >
       <div className="flex flex-col gap-5 py-2">
-        {/* Nombre */}
-        <div className="flex flex-col gap-1">
-          <label className="font-medium">Nombre del restaurante</label>
-          <Input
-            name="name"
-            placeholder="Ej: Restaurante El Mirador"
-            value={formData.name}
-            onChange={handleTextChange}
-          />
+
+        {/* Nombre y Horarios */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-1 w-full">
+            <label className="font-medium">Nombre del restaurante</label>
+            <Input
+              name="name"
+              placeholder="Ej: Restaurante El Mirador"
+              value={formData.name}
+              onChange={handleTextChange}
+            />
+          </div>
+          <div className="flex flex-col gap-1 w-full">
+            <label className="font-medium">Horarios</label>
+            <Input
+              name="schedule"
+              placeholder="Lunes a Domingo de 8:00am - 10:00pm"
+              value={formData.schedule}
+              onChange={handleTextChange}
+            />
+          </div>
         </div>
 
         {/* Descripción */}
@@ -139,57 +152,47 @@ export const RestaurantFormModal = ({
           />
         </div>
 
-        {/* Horarios */}
-        <div className="flex flex-col gap-1">
-          <label className="font-medium">Horarios</label>
-          <Input
-            name="schedule"
-            placeholder="Lunes a Domingo de 8:00am - 10:00pm"
-            value={formData.schedule}
-            onChange={handleTextChange}
-          />
-        </div>
-
-        {/* ¿Destacado? */}
+        {/* Switch */}
         <div className="flex items-center gap-3">
           <label className="font-medium">¿Destacado?</label>
           <Switch checked={formData.highlighted} onChange={handleSwitchChange} />
         </div>
 
-        {/* Imagen */}
-        <div className="flex flex-col gap-1">
-          <label className="font-medium">Imagen del restaurante</label>
-          <Upload
-            beforeUpload={(file) => {
-              setFormData((prev) => ({ ...prev, image: file }));
-              return false;
-            }}
-            showUploadList={false}
-            accept="image/*"
-          >
-            <Button icon={<UploadOutlined />}>Seleccionar imagen</Button>
-          </Upload>
-          {formData.image && (
-            <span className="text-sm text-gray-500">{formData.image.name}</span>
-          )}
-        </div>
+        {/* Imagen y PDF */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-1 w-full">
+            <label className="font-medium">Imagen del restaurante</label>
+            <Upload
+              beforeUpload={(file) => {
+                setFormData((prev) => ({ ...prev, image: file }));
+                return false;
+              }}
+              showUploadList={false}
+              accept="image/*"
+            >
+              <Button icon={<UploadOutlined />}>Seleccionar imagen</Button>
+            </Upload>
+            {formData.image && (
+              <span className="text-sm text-gray-500">{formData.image.name}</span>
+            )}
+          </div>
 
-        {/* Menú PDF */}
-        <div className="flex flex-col gap-1">
-          <label className="font-medium">Menú en PDF</label>
-          <Upload
-            beforeUpload={(file) => {
-              setFormData((prev) => ({ ...prev, pdf: file }));
-              return false;
-            }}
-            showUploadList={false}
-            accept=".pdf"
-          >
-            <Button icon={<UploadOutlined />}>Seleccionar PDF</Button>
-          </Upload>
-          {formData.pdf && (
-            <span className="text-sm text-gray-500">{formData.pdf.name}</span>
-          )}
+          <div className="flex flex-col gap-1 w-full">
+            <label className="font-medium">Menú en PDF</label>
+            <Upload
+              beforeUpload={(file) => {
+                setFormData((prev) => ({ ...prev, pdf: file }));
+                return false;
+              }}
+              showUploadList={false}
+              accept=".pdf"
+            >
+              <Button icon={<UploadOutlined />}>Seleccionar PDF</Button>
+            </Upload>
+            {formData.pdf && (
+              <span className="text-sm text-gray-500">{formData.pdf.name}</span>
+            )}
+          </div>
         </div>
       </div>
     </Modal>

@@ -10,6 +10,8 @@ import {
   message,
   Select,
   Typography,
+  Row,
+  Col,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -101,12 +103,40 @@ export const EventFormModal: FC<EventFormModalProps> = ({
       onCancel={onClose}
       footer={null}
       centered
-      width={600}
+      width={700}
     >
       <Form layout="vertical" form={form} onFinish={handleSubmit} style={{ marginTop: 8 }}>
-        <Form.Item name="title" label="Título" rules={[{ required: true }]}>
-          <Input placeholder="Nombre del evento" style={inputStyle} />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="title" label="Título" rules={[{ required: true }]}>
+              <Input placeholder="Nombre del evento" style={inputStyle} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="eventDate" label="Fecha del evento" rules={[{ required: true }]}>
+              <DatePicker format="YYYY-MM-DD" style={{ width: "100%", ...inputStyle }} />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="capacity" label="Capacidad" rules={[{ required: true }]}>
+              <InputNumber min={1} style={{ width: "100%", ...inputStyle }} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="price" label="Precio ($)" rules={[{ required: true }]}>
+              <InputNumber
+                min={0}
+                step={0.01}
+                style={{ width: "100%", ...inputStyle }}
+                formatter={(value) => `$ ${value}`}
+                parser={((value?: string) => (value ? value.replace(/[^\d.]/g, "") : "")) as any}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Form.Item name="description" label="Descripción" rules={[{ required: true }]}>
           <Input.TextArea
@@ -116,65 +146,46 @@ export const EventFormModal: FC<EventFormModalProps> = ({
           />
         </Form.Item>
 
-        <Form.Item name="eventDate" label="Fecha del evento" rules={[{ required: true }]}>
-          <DatePicker
-            format="YYYY-MM-DD"
-            style={{ width: "100%", ...inputStyle }}
-          />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="active" label="Estado" rules={[{ required: true }]}>
+              <Select style={inputStyle}>
+                <Option value={true}>Activo</Option>
+                <Option value={false}>Inactivo</Option>
+              </Select>
+            </Form.Item>
+          </Col>
 
-        <Form.Item name="capacity" label="Capacidad" rules={[{ required: true }]}>
-          <InputNumber min={1} style={{ width: "100%", ...inputStyle }} />
-        </Form.Item>
+          <Col span={12}>
+            <Form.Item
+              name="image"
+              label="Imagen del evento"
+              valuePropName="file"
+              getValueFromEvent={(e) => {
+                if (Array.isArray(e)) return e;
+                return e?.file?.originFileObj || e?.fileList?.[0]?.originFileObj || null;
+              }}
+              rules={!initialData ? [{ required: true, message: "La imagen es requerida" }] : []}
+            >
+              <Upload accept="image/*" maxCount={1} showUploadList beforeUpload={() => false}>
+                <Button icon={<UploadOutlined />} size="middle">
+                  Seleccionar imagen
+                </Button>
+              </Upload>
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item name="price" label="Precio ($)" rules={[{ required: true }]}>
-          <InputNumber
-            min={0}
-            step={0.01}
-            style={{ width: "100%", ...inputStyle }}
-            formatter={(value) => `$ ${value}`}
-            parser={((value?: string) => (value ? value.replace(/[^\d.]/g, "") : "")) as any}
-          />
-        </Form.Item>
-
-        <Form.Item name="active" label="Estado" rules={[{ required: true }]}>
-          <Select style={inputStyle}>
-            <Option value={true}>Activo</Option>
-            <Option value={false}>Inactivo</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="image"
-          label="Imagen del evento"
-          valuePropName="file"
-          getValueFromEvent={(e) => {
-            if (Array.isArray(e)) return e;
-            return e?.file?.originFileObj || e?.fileList?.[0]?.originFileObj || null;
-          }}
-          rules={
-            !initialData
-              ? [{ required: true, message: "La imagen es requerida" }]
-              : []
-          }
-        >
-          <Upload
-            accept="image/*"
-            maxCount={1}
-            showUploadList
-            beforeUpload={() => false}
-          >
-            <Button icon={<UploadOutlined />} size="middle">
-              Seleccionar imagen
-            </Button>
-          </Upload>
-        </Form.Item>
-
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <Button onClick={onClose} style={{ borderRadius: 6 }}>
             Cancelar
           </Button>
-          <Button type="primary" htmlType="submit" loading={loading} style={{ borderRadius: 6 }}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            style={{ borderRadius: 6 }}
+          >
             {initialData ? "Actualizar" : "Guardar"}
           </Button>
         </div>

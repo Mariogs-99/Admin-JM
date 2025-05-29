@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "antd";
 import { RestaurantTableAdmin } from "../pages/RestaurantTableAdmin";
 import { RestaurantFormModal } from "../pages/RestaurantFormModal";
 import { Restaurant } from "../interfaces/restaurantInterface";
@@ -32,10 +31,13 @@ export const RestaurantSectionForm = () => {
   return (
     <section className="px-6 py-10">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Restaurantes registrados</h2>
-        <Button type="primary" onClick={handleOpenModal}>
+        <h2 className="text-2xl font-bold text-[#5c3a1e]">Restaurantes registrados</h2>
+        <button
+          onClick={handleOpenModal}
+          className="bg-[#b49a7b] hover:bg-[#a67c52] active:bg-[#946846] text-white px-6 py-2 rounded-md transition-colors duration-200"
+        >
           Agregar restaurante
-        </Button>
+        </button>
       </div>
 
       <RestaurantTableAdmin refresh={refresh} onEdit={handleEdit} />

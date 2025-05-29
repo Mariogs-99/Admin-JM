@@ -1,4 +1,4 @@
-import { Table, Button, Space, Image } from "antd";
+import { Table, Button, Space, Image, Tag } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Experience } from "../interfaces/Experience";
 
@@ -54,6 +54,17 @@ export const ExperienceCardInformation = ({
       title: "Disponible",
       dataIndex: "availableDays",
       key: "availableDays",
+    },
+    {
+      title: "Estado",
+      dataIndex: "active",
+      key: "active",
+      render: (active: boolean) =>
+        active ? (
+          <Tag color="green">Activo</Tag>
+        ) : (
+          <Tag color="red">Inactivo</Tag>
+        ),
     },
     {
       title: "Acciones",

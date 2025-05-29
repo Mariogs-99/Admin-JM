@@ -1,4 +1,4 @@
-import { Modal, Button, message } from "antd";
+import { Modal, message } from "antd";
 import { useEffect, useState } from "react";
 import { Title } from "../../shared/text/title";
 import { getExperiences, deleteExperience } from "../services/experiencesServices";
@@ -11,7 +11,6 @@ function ExperiencesPage() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
 
-  // ✅ para el modal de confirmación controlado
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [experienceToDelete, setExperienceToDelete] = useState<Experience | null>(null);
 
@@ -65,15 +64,15 @@ function ExperiencesPage() {
     <>
       <div className="flex justify-between items-center pb-6">
         <Title>Gestión de Experiencias</Title>
-        <Button
-          type="primary"
+        <button
           onClick={() => {
             setEditingExperience(null);
             setModalVisible(true);
           }}
+          className="bg-[#b49a7b] hover:bg-[#a67c52] active:bg-[#946846] text-white px-6 py-2 rounded-md transition-colors duration-200"
         >
           Agregar experiencia
-        </Button>
+        </button>
       </div>
 
       <ExperienceCardInformation
@@ -92,7 +91,6 @@ function ExperiencesPage() {
         initialData={editingExperience}
       />
 
-      {/* ✅ Modal de confirmación controlado */}
       <Modal
         open={confirmVisible}
         title={`¿Eliminar experiencia "${experienceToDelete?.title}"?`}
