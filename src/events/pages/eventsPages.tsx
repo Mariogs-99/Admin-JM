@@ -63,7 +63,7 @@ function EventPage() {
 
   return (
     <div className="flex flex-col gap-7">
-      <Title>Gestión de eventos</Title>
+      <Title>Eventos</Title>
 
       {/* Filtro y botón Agregar */}
       <EventFilterContainer results={events.length} onAdd={handleAdd} />

@@ -53,7 +53,7 @@ export const CategoryPage = () => {
   return (
     <>
       <div className="flex justify-between items-center mb-5">
-        <Title>Tipos de habitación</Title>
+        <Title>Categorias</Title>
         <button
           onClick={() => {
             setEditingCategory(null);

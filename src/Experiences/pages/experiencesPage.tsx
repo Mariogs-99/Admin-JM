@@ -63,7 +63,7 @@ function ExperiencesPage() {
   return (
     <>
       <div className="flex justify-between items-center pb-6">
-        <Title>Gestión de Experiencias</Title>
+        <Title>Experiencias</Title>
         <button
           onClick={() => {
             setEditingExperience(null);
