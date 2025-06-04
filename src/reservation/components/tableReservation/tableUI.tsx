@@ -81,17 +81,18 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       sorter: (a: Reservation, b: Reservation) => a.name.localeCompare(b.name),
       sortOrder: sortedInfo.columnKey === "name" && sortedInfo.order,
     },
-    {
-      title: () => (
-        <SortableTitle
-          title="Habitación"
-          sortedColumn={sortedInfo.columnKey === "room" ? sortedInfo : undefined}
-        />
-      ),
-      dataIndex: ["room", "nameEs"],
-      key: "room",
-      render: (_: any, record: Reservation) => record.room?.nameEs || "Sin nombre",
-    },
+   {
+  title: () => (
+    <SortableTitle
+      title="Habitación"
+      sortedColumn={sortedInfo.columnKey === "room" ? sortedInfo : undefined}
+    />
+  ),
+  dataIndex: ["room", "name"], // ✅ corregido
+  key: "room",
+  render: (_: any, record: Reservation) => record.room?.name || "Sin nombre", // ✅ corregido
+},
+
     {
       title: () => (
         <SortableTitle
@@ -178,6 +179,34 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       },
       sorter: (a: Reservation, b: Reservation) =>
         parseCreationDate(a.creationDate).getTime() - parseCreationDate(b.creationDate).getTime(),
+    },
+    {
+      title: () => (
+        <SortableTitle
+          title="Estado"
+          sortedColumn={sortedInfo.columnKey === "status" ? sortedInfo : undefined}
+        />
+      ),
+      dataIndex: "status",
+      key: "status",
+      sorter: (a: Reservation, b: Reservation) => a.status.localeCompare(b.status),
+      render: (status: string) => {
+        let color = "gray";
+        let label = status;
+
+        if (status === "FINALIZADA") {
+          color = "green";
+          label = "Finalizada";
+        } else if (status === "ACTIVA") {
+          color = "blue";
+          label = "Activa";
+        } else if (status === "FUTURA") {
+          color = "orange";
+          label = "Futura";
+        }
+
+        return <span style={{ color, fontWeight: "bold" }}>{label}</span>;
+      },
     },
     {
       title: "Acciones",

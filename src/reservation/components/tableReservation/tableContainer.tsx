@@ -45,7 +45,7 @@ export const TableContainer = ({
 
     if (filters.room?.name) {
       filtered = filtered.filter((r) =>
-        r.room?.nameEs?.toLowerCase().includes(filters.room!.name.toLowerCase())
+        r.room?.name?.toLowerCase().includes(filters.room!.name.toLowerCase())
       );
     }
 

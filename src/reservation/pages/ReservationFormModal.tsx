@@ -97,47 +97,48 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!visible) {
-      resetFormStates();
-      return;
-    }
+  if (!visible) {
+    resetFormStates();
+    return;
+  }
 
-    if (!initialData) return;
+  if (!initialData) return;
 
-    const {
-      name,
-      phone,
-      email,
-      cantPeople,
-      quantityReserved,
-      room,
-      initDate,
-      finishDate,
-      payment,
-    } = initialData;
+  const {
+    name,
+    phone,
+    email,
+    cantPeople,
+    quantityReserved,
+    room,
+    initDate,
+    finishDate,
+    payment,
+  } = initialData;
 
-    const initDay = `${initDate[0]}-${String(initDate[1]).padStart(2, "0")}-${String(initDate[2]).padStart(2, "0")}`;
-    const finishDay = `${finishDate[0]}-${String(finishDate[1]).padStart(2, "0")}-${String(finishDate[2]).padStart(2, "0")}`;
+  const initDay = `${initDate[0]}-${String(initDate[1]).padStart(2, "0")}-${String(initDate[2]).padStart(2, "0")}`;
+  const finishDay = `${finishDate[0]}-${String(finishDate[1]).padStart(2, "0")}-${String(finishDate[2]).padStart(2, "0")}`;
 
-    form.setFieldsValue({
-      name,
-      phone,
-      email,
-      cantPeople,
-      quantityReserved,
-      initDate: dayjs(initDay),
-      finishDate: dayjs(finishDay),
-      roomId: room?.roomId,
-      payment,
-    });
+  form.setFieldsValue({
+    name,
+    phone,
+    email,
+    cantPeople,
+    quantityReserved,
+    initDate: dayjs(initDay),
+    finishDate: dayjs(finishDay),
+    roomId: room?.roomId,
+    payment,
+  });
 
-    setSelectedRoomPrice(room?.price ?? 0);
-    setSelectedRoomInfo(room ?? null);
-    setDates({ checkIn: initDay, checkOut: finishDay });
-    setCantPeople(cantPeople);
-    calculatePrice(room?.price, initDay, finishDay);
-    fetchAvailableRooms(initDay, finishDay, cantPeople);
-  }, [initialData, visible]);
+  setSelectedRoomPrice(room?.price ?? 0);
+  setSelectedRoomInfo(room ?? null);
+  setDates({ checkIn: initDay, checkOut: finishDay });
+  setCantPeople(cantPeople);
+  setSelectedCategoryId(room?.categoryRoom?.categoryRoomId ?? null); // ✅ Corrección aquí
+  calculatePrice(room?.price, initDay, finishDay);
+  fetchAvailableRooms(initDay, finishDay, cantPeople);
+}, [initialData, visible]);
 
   const fetchAvailableRooms = async (initDate: string, finishDate: string, people: number) => {
     try {

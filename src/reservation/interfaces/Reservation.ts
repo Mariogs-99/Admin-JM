@@ -1,19 +1,20 @@
 export interface Reservation {
   reservationId: number;
   name: string;
-  initDate: string; // Fecha como string ISO
+  initDate: string;
   finishDate: string;
   cantPeople: number;
   email: string;
   phone: string;
   payment: number;
   quantityReserved: number;
-  creationDate: string; // ahora vendrá en formato válido ISO
+  creationDate: string;
+  status: string;
   room: {
     roomId: number;
-    nameEs: string;
+    name: string; 
     categoryRoom: {
-      nameCategoryEs: string;
+      nameCategory: string; 
     };
   };
 }
