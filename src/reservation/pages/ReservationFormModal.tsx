@@ -128,6 +128,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
     initDate: dayjs(initDay),
     finishDate: dayjs(finishDay),
     roomId: room?.roomId,
+    categoryRoomId: room?.categoryRoom?.categoryRoomId ?? null,
     payment,
   });
 
@@ -302,7 +303,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
           </Col>
 
           <Col span={24}>
-           <Form.Item label="Filtrar por categoría">
+           <Form.Item name="categoryRoomId" label="Filtrar por categoría">
             <Select
               allowClear
               placeholder="Selecciona categoría"
@@ -310,12 +311,10 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
               onChange={(value) => {
                 setSelectedCategoryId(value ?? null);
 
-                // Reaplica el filtro por cantPeople también
                 if (dates.checkIn && dates.checkOut && cantPeople) {
                   fetchAvailableRooms(dates.checkIn, dates.checkOut, cantPeople);
                 }
 
-                // Limpia selección anterior si cambia la categoría
                 form.setFieldsValue({ roomId: null });
                 setSelectedRoomInfo(null);
                 setSelectedRoomPrice(0);
