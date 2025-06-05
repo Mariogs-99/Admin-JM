@@ -151,7 +151,7 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
     {
       title: () => (
         <SortableTitle
-          title="Capacidad"
+          title="Huéspedes"
           sortedColumn={sortedInfo.columnKey === "cantPeople" ? sortedInfo : undefined}
         />
       ),
