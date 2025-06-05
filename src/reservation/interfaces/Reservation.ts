@@ -10,11 +10,20 @@ export interface Reservation {
   quantityReserved: number;
   creationDate: string;
   status: string;
+  roomNumber: string; // 🆕 nuevo campo
+
   room: {
     roomId: number;
-    name: string; 
+    name: string;
     categoryRoom: {
-      nameCategory: string; 
+      categoryRoomId: number;
+      nameCategoryEs: string;
+      descriptionEs: string;
+      roomSize: string;
+      bedInfo: string;
+      hasTv: boolean;
+      hasAc: boolean;
+      hasPrivateBathroom: boolean;
     };
   };
 }

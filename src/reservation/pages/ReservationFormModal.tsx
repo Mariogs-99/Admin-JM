@@ -96,7 +96,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
     fetchCategories();
   }, []);
 
-  useEffect(() => {
+ useEffect(() => {
   if (!visible) {
     resetFormStates();
     return;
@@ -128,30 +128,39 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
     initDate: dayjs(initDay),
     finishDate: dayjs(finishDay),
     roomId: room?.roomId,
-    categoryRoomId: room?.categoryRoom?.categoryRoomId ?? null,
     payment,
+    categoryRoomId: room?.categoryRoom?.categoryRoomId ?? null,
   });
 
   setSelectedRoomPrice(room?.price ?? 0);
-  setSelectedRoomInfo(room ?? null);
   setDates({ checkIn: initDay, checkOut: finishDay });
   setCantPeople(cantPeople);
-  setSelectedCategoryId(room?.categoryRoom?.categoryRoomId ?? null); // ✅ Corrección aquí
+  setSelectedCategoryId(room?.categoryRoom?.categoryRoomId ?? null);
   calculatePrice(room?.price, initDay, finishDay);
-  fetchAvailableRooms(initDay, finishDay, cantPeople);
+
+  // ✅ Ahora se actualiza correctamente la disponibilidad de la habitación
+  fetchAvailableRooms(initDay, finishDay, cantPeople).then((rooms) => {
+    const updatedRoom = rooms.find((r) => r.roomId === room?.roomId);
+    if (updatedRoom) {
+      setSelectedRoomInfo(updatedRoom); // 🟢 Aquí ya viene con availableQuantity real
+    }
+  });
 }, [initialData, visible]);
 
-  const fetchAvailableRooms = async (initDate: string, finishDate: string, people: number) => {
-    try {
-      const data = await GetAvailableRooms(initDate, finishDate, people);
-      setFilteredRooms(data);
-      setRooms(data);
-    } catch (error) {
-      message.error("Error al obtener habitaciones disponibles");
-      setFilteredRooms([]);
-      setRooms([]);
-    }
-  };
+ const fetchAvailableRooms = async (initDate: string, finishDate: string, people: number) => {
+  try {
+    const data = await GetAvailableRooms(initDate, finishDate, people);
+    setFilteredRooms(data);
+    setRooms(data);
+    return data; // <- ✅ esto es lo que faltaba
+  } catch (error) {
+    message.error("Error al obtener habitaciones disponibles");
+    setFilteredRooms([]);
+    setRooms([]);
+    return []; // <- para evitar errores si falla
+  }
+};
+
 
   const handleRoomChange = (roomId: number) => {
     const selectedRoom = rooms.find((r) => r.roomId === roomId);
@@ -304,6 +313,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 
           <Col span={24}>
            <Form.Item name="categoryRoomId" label="Filtrar por categoría">
+
             <Select
               allowClear
               placeholder="Selecciona categoría"
@@ -311,10 +321,12 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
               onChange={(value) => {
                 setSelectedCategoryId(value ?? null);
 
+                // Reaplica el filtro por cantPeople también
                 if (dates.checkIn && dates.checkOut && cantPeople) {
                   fetchAvailableRooms(dates.checkIn, dates.checkOut, cantPeople);
                 }
 
+                // Limpia selección anterior si cambia la categoría
                 form.setFieldsValue({ roomId: null });
                 setSelectedRoomInfo(null);
                 setSelectedRoomPrice(0);
@@ -348,9 +360,11 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
                 <Text>
                   <b>Habitación seleccionada:</b> {selectedRoomInfo.name}
                 </Text><br />
-                <Text>
-                  <b>Disponibles:</b> {selectedRoomInfo.quantity} habitación{selectedRoomInfo.quantity > 1 ? "es" : ""}
-                </Text>
+               <Text>
+                <b>Disponibles:</b> {selectedRoomInfo.availableQuantity} habitación
+                {selectedRoomInfo.availableQuantity > 1 ? "es" : ""}
+              </Text>
+
               </Card>
             </Col>
           )}

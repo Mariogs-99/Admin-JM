@@ -5,8 +5,8 @@ import { ReservationFormModal } from "../../pages/ReservationFormModal";
 import { deleteReservation } from "../../../reservation/services/reservationService";
 import { DeleteConfirmationModal } from "../../pages/DeleteConfirmationModal";
 import { Reservation } from "../../../reservation/interfaces/Reservation";
+import { AssignRoomModal } from "../../pages/AssignRoomModal"; // ✅ nuevo
 
-// Función para convertir un array tipo [2025, 5, 22, 14, 8, 4] a Date
 const parseCreationDate = (value: any): Date => {
   if (Array.isArray(value) && value.length >= 3) {
     const [year, month, day, hour = 0, minute = 0, second = 0] = value;
@@ -27,6 +27,8 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [reservationToDelete, setReservationToDelete] = useState<number | null>(null);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [reservationToAssign, setReservationToAssign] = useState<Reservation | null>(null);
 
   const handleEdit = (reservation: Reservation) => {
     setSelectedReservation(reservation);
@@ -36,6 +38,11 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
   const handleDeleteClick = (id: number) => {
     setReservationToDelete(id);
     setDeleteModalVisible(true);
+  };
+
+  const handleAssignClick = (reservation: Reservation) => {
+    setReservationToAssign(reservation);
+    setAssignModalOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -65,6 +72,9 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       <Button danger onClick={() => handleDeleteClick(record.reservationId)}>
         Eliminar
       </Button>
+      <Button onClick={() => handleAssignClick(record)}>
+        Asignar habitación
+      </Button>
     </div>
   );
 
@@ -81,18 +91,28 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       sorter: (a: Reservation, b: Reservation) => a.name.localeCompare(b.name),
       sortOrder: sortedInfo.columnKey === "name" && sortedInfo.order,
     },
-   {
-  title: () => (
-    <SortableTitle
-      title="Habitación"
-      sortedColumn={sortedInfo.columnKey === "room" ? sortedInfo : undefined}
-    />
-  ),
-  dataIndex: ["room", "name"], // ✅ corregido
-  key: "room",
-  render: (_: any, record: Reservation) => record.room?.name || "Sin nombre", // ✅ corregido
-},
-
+    {
+      title: () => (
+        <SortableTitle
+          title="Habitación"
+          sortedColumn={sortedInfo.columnKey === "room" ? sortedInfo : undefined}
+        />
+      ),
+      dataIndex: ["room", "name"],
+      key: "room",
+      render: (_: any, record: Reservation) => record.room?.name || "Sin nombre",
+    },
+    {
+      title: () => (
+        <SortableTitle
+          title="Número de habitación"
+          sortedColumn={sortedInfo.columnKey === "roomNumber" ? sortedInfo : undefined}
+        />
+      ),
+      dataIndex: "roomNumber",
+      key: "roomNumber",
+      sorter: (a: Reservation, b: Reservation) => (a.roomNumber || "").localeCompare(b.roomNumber || ""),
+    },
     {
       title: () => (
         <SortableTitle
@@ -103,8 +123,7 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       dataIndex: "initDate",
       key: "initDate",
       render: (date: any) => new Date(date).toLocaleDateString("es-ES"),
-      sorter: (a: Reservation, b: Reservation) =>
-        new Date(a.initDate).getTime() - new Date(b.initDate).getTime(),
+      sorter: (a: Reservation, b: Reservation) => new Date(a.initDate).getTime() - new Date(b.initDate).getTime(),
     },
     {
       title: () => (
@@ -116,8 +135,7 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       dataIndex: "finishDate",
       key: "finishDate",
       render: (date: any) => new Date(date).toLocaleDateString("es-ES"),
-      sorter: (a: Reservation, b: Reservation) =>
-        new Date(a.finishDate).getTime() - new Date(b.finishDate).getTime(),
+      sorter: (a: Reservation, b: Reservation) => new Date(a.finishDate).getTime() - new Date(b.finishDate).getTime(),
     },
     {
       title: () => (
@@ -128,8 +146,7 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       ),
       dataIndex: "quantityReserved",
       key: "quantityReserved",
-      sorter: (a: Reservation, b: Reservation) =>
-        a.quantityReserved - b.quantityReserved,
+      sorter: (a: Reservation, b: Reservation) => a.quantityReserved - b.quantityReserved,
     },
     {
       title: () => (
@@ -239,6 +256,18 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModalVisible(false)}
       />
+
+      {reservationToAssign && (
+        <AssignRoomModal
+          visible={assignModalOpen}
+          reservationId={reservationToAssign.reservationId}
+          onCancel={() => setAssignModalOpen(false)}
+          onSuccess={() => {
+            setAssignModalOpen(false);
+            onReservationUpdated?.();
+          }}
+        />
+      )}
     </>
   );
 };

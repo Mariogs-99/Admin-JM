@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getToken } from "../../login/services/loginService";
 import { Reservation } from "../interfaces/Reservation";
+import { ReservationInput } from "./ReservationInput"; // <- Asegúrate que esta ruta sea correcta
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -23,7 +24,7 @@ export const GetReservations = async (): Promise<Reservation[]> => {
 };
 
 // Crear una nueva reserva
-export const SaveReservations = async (body: Reservation): Promise<void> => {
+export const SaveReservations = async (body: ReservationInput): Promise<void> => {
   try {
     await axios.post(`${BASE_URL}/api/reservation/`, body, {
       headers: getAuthHeaders(),
@@ -37,7 +38,7 @@ export const SaveReservations = async (body: Reservation): Promise<void> => {
 // Actualizar una reserva existente
 export const UpdateReservation = async (
   id: number,
-  body: Reservation
+  body: ReservationInput
 ): Promise<void> => {
   try {
     await axios.put(`${BASE_URL}/api/reservation/${id}`, body, {
@@ -60,7 +61,6 @@ export const deleteReservation = async (id: number): Promise<void> => {
     throw error;
   }
 };
-
 
 // Obtener habitaciones disponibles según fechas y cantidad de personas
 export const GetAvailableRooms = async (
@@ -85,5 +85,20 @@ export const GetAvailableRooms = async (
     console.error("Error al obtener habitaciones disponibles:", error.response?.data || error);
     throw new Error("No se pudieron cargar las habitaciones disponibles");
   }
+};
+
+export const assignRoomNumber = async (
+  reservationId: number,
+  roomNumber: string
+): Promise<void> => {
+  const response = await axios.put(
+    `${BASE_URL}/api/reservation/${reservationId}/assign-room`,
+    {},
+    {
+      headers: getAuthHeaders(),
+      params: { roomNumber },
+    }
+  );
+  return response.data;
 };
 
