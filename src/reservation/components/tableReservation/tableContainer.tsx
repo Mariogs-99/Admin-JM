@@ -4,7 +4,7 @@ import { Reservation } from "../../interfaces/Reservation";
 import { TableUI } from "./tableUI";
 
 interface ReservationFilters {
-  room?: { name: string };
+  roomName?: string; // ✅ simplificado
   startDate?: string;
   endDate?: string;
 }
@@ -43,9 +43,12 @@ export const TableContainer = ({
   const applyFilters = () => {
     let filtered = [...reservations];
 
-    if (filters.room?.name) {
+    if (filters.roomName) {
+      const term = filters.roomName.toLowerCase();
       filtered = filtered.filter((r) =>
-        r.room?.name?.toLowerCase().includes(filters.room!.name.toLowerCase())
+        r.rooms?.some((room) =>
+          room.roomName.toLowerCase().includes(term)
+        )
       );
     }
 

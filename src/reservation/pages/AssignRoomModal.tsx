@@ -1,38 +1,54 @@
-import { Modal, Form, Input, Button, message } from "antd";
-import { useState } from "react";
-import { assignRoomNumber } from "../services/reservationService";
+import { Modal, Form, Input, Button, message, Row, Col } from "antd";
+import { useState, useEffect } from "react";
+import { assignRoomNumbers, RoomAssignment } from "../services/reservationService";
+import { Reservation } from "../interfaces/Reservation";
 
 interface AssignRoomModalProps {
   visible: boolean;
   onCancel: () => void;
   onSuccess: () => void;
-  reservationId: number | null;
+  reservation: Reservation | null;
 }
 
 export const AssignRoomModal = ({
   visible,
   onCancel,
   onSuccess,
-  reservationId,
+  reservation,
 }: AssignRoomModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [backendError, setBackendError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (reservation && visible) {
+      const initialValues: any = {};
+      reservation.rooms?.forEach((room, index) => {
+        initialValues[`room_${index}`] = room.assignedRoomNumber || "";
+      });
+      form.setFieldsValue(initialValues);
+    }
+  }, [reservation, visible]);
+
   const handleAssign = async () => {
     try {
-      const { roomNumber } = await form.validateFields();
+      const values = await form.validateFields();
+      if (!reservation) return;
 
-      if (!reservationId) return;
+      const payload: RoomAssignment[] = reservation.rooms.map((room, index) => ({
+        roomId: room.roomId,
+        quantity: room.quantity,
+        assignedRoomNumber: values[`room_${index}`] || "",
+      }));
 
       setLoading(true);
-      await assignRoomNumber(reservationId, roomNumber);
-      message.success("Habitación asignada exitosamente");
+      await assignRoomNumbers(reservation.reservationId, payload);
+      message.success("Habitaciones asignadas correctamente");
       form.resetFields();
       setBackendError(null);
       onSuccess();
     } catch (err: any) {
-      const msg = err?.response?.data?.message ?? "Error al asignar habitación";
+      const msg = err?.response?.data?.message ?? "Error al asignar habitaciones";
       setBackendError(msg);
     } finally {
       setLoading(false);
@@ -42,7 +58,7 @@ export const AssignRoomModal = ({
   return (
     <Modal
       open={visible}
-      title="Asignar habitación"
+      title="Asignar habitaciones"
       onCancel={() => {
         form.resetFields();
         setBackendError(null);
@@ -53,14 +69,20 @@ export const AssignRoomModal = ({
       confirmLoading={loading}
       destroyOnClose
     >
-      <Form layout="vertical" form={form}>
-        <Form.Item
-          name="roomNumber"
-          label="Número de habitación"
-          rules={[{ required: true, message: "Este campo es obligatorio" }]}
-        >
-          <Input placeholder="Ej. 202-A" />
-        </Form.Item>
+      <Form form={form} layout="vertical">
+        {reservation?.rooms?.map((room, index) => (
+          <Row key={index} gutter={8}>
+            <Col span={16}>
+              <Form.Item
+                label={`${room.roomName} × ${room.quantity}`}
+                name={`room_${index}`}
+                rules={[{ required: true, message: "Número requerido" }]}
+              >
+                <Input placeholder="Ej. 101, 102A, etc." />
+              </Form.Item>
+            </Col>
+          </Row>
+        ))}
 
         {backendError && (
           <div

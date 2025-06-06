@@ -10,20 +10,16 @@ export interface Reservation {
   quantityReserved: number;
   creationDate: string;
   status: string;
-  roomNumber: string; // 🆕 nuevo campo
+  roomNumber: string;
 
-  room: {
+  // 🔁 Reemplazamos esto:
+  // room: { ... }
+
+  // ✅ Por esto:
+  rooms: {
     roomId: number;
-    name: string;
-    categoryRoom: {
-      categoryRoomId: number;
-      nameCategoryEs: string;
-      descriptionEs: string;
-      roomSize: string;
-      bedInfo: string;
-      hasTv: boolean;
-      hasAc: boolean;
-      hasPrivateBathroom: boolean;
-    };
-  };
+    roomName: string;
+    quantity: number;
+    assignedRoomNumber: string | null;
+  }[];
 }
