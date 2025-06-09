@@ -122,7 +122,7 @@ export const assignRoomNumbers = async (
 ): Promise<void> => {
   try {
     await axios.put(
-      `${BASE_URL}/api/reservation/${reservationId}/assign-room-numbers`,
+      `${BASE_URL}/api/reservation/${reservationId}/assign-rooms`,
       rooms,
       {
         headers: getAuthHeaders(),

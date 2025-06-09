@@ -87,7 +87,7 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       sortOrder: sortedInfo.columnKey === "name" && sortedInfo.order,
     },
     {
-      title: () => <SortableTitle title="Habitación" sortedColumn={sortedInfo.columnKey === "room" ? sortedInfo : undefined} />,
+      title: () => <SortableTitle title="Habitación" />,
       key: "room",
       render: (_: any, record: Reservation) =>
         record.rooms && record.rooms.length > 0
@@ -95,12 +95,15 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
           : "Sin habitaciones",
     },
     {
-      title: () => <SortableTitle title="Número de habitación" sortedColumn={undefined} />,
+      title: () => <SortableTitle title="Número de habitación" />,
       key: "assignedRoomNumber",
-      render: (_: any, record: Reservation) =>
-        record.rooms && record.rooms.length > 0
-          ? record.rooms.map((r) => r.assignedRoomNumber || "Sin asignar").join(", ")
-          : "—",
+      render: (_: any, record: Reservation) => {
+        const numbers = record.rooms
+          ?.map(r => r.assignedRoomNumber)
+          .filter(num => !!num?.trim());
+
+        return numbers?.length ? numbers.join(", ") : "Sin asignar";
+      },
     },
     {
       title: () => <SortableTitle title="Fecha inicio" sortedColumn={sortedInfo.columnKey === "initDate" ? sortedInfo : undefined} />,
@@ -117,10 +120,14 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       sorter: (a: Reservation, b: Reservation) => new Date(a.finishDate).getTime() - new Date(b.finishDate).getTime(),
     },
     {
-      title: () => <SortableTitle title="Habitaciones reservadas" sortedColumn={sortedInfo.columnKey === "quantityReserved" ? sortedInfo : undefined} />,
-      dataIndex: "quantityReserved",
-      key: "quantityReserved",
-      sorter: (a: Reservation, b: Reservation) => a.quantityReserved - b.quantityReserved,
+      title: () => <SortableTitle title="Habitaciones reservadas" />,
+      key: "roomsCount",
+      render: (_: any, record: Reservation) => {
+        return record.rooms?.reduce((sum, r) => sum + (r.quantity || 0), 0) || 0;
+      },
+      sorter: (a: Reservation, b: Reservation) =>
+        (a.rooms?.reduce((sum, r) => sum + (r.quantity || 0), 0) || 0) -
+        (b.rooms?.reduce((sum, r) => sum + (r.quantity || 0), 0) || 0),
     },
     {
       title: () => <SortableTitle title="Huéspedes" sortedColumn={sortedInfo.columnKey === "cantPeople" ? sortedInfo : undefined} />,

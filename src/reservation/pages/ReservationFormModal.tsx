@@ -20,7 +20,6 @@ import {
   UpdateReservation,
   getAvailableRooms,
 } from "../services/reservationService";
-import { getAllCategoriesRoom } from "../../category/services/categoryService";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -40,48 +39,62 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [availableRooms, setAvailableRooms] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [summary, setSummary] = useState<{
-    subtotal: number;
-    iva: number;
-    total: number;
-    details: string[];
-    nights: number;
-  }>({ subtotal: 0, iva: 0, total: 0, details: [], nights: 0 });
+  const [summary, setSummary] = useState({
+    subtotal: 0,
+    iva: 0,
+    total: 0,
+    details: [] as string[],
+    nights: 0,
+  });
 
   const fetchRooms = async (checkIn: string, checkOut: string, guests: number) => {
     try {
       const data = await getAvailableRooms(checkIn, checkOut, guests);
-      setAvailableRooms(data);
+      return data;
     } catch {
-      setAvailableRooms([]);
       message.error("Error al obtener habitaciones");
+      return [];
     }
   };
 
   useEffect(() => {
-    getAllCategoriesRoom().then(setCategories);
-  }, []);
+    const loadData = async () => {
+      if (visible && initialData) {
+        const checkIn = dayjs(initialData.initDate).format("YYYY-MM-DD");
+        const checkOut = dayjs(initialData.finishDate).format("YYYY-MM-DD");
 
-  useEffect(() => {
-    if (visible && initialData) {
-      form.setFieldsValue({
-        ...initialData,
-        initDate: dayjs(initialData.initDate),
-        finishDate: dayjs(initialData.finishDate),
-        rooms: initialData.rooms?.map((r: any) => ({
-          roomId: r.roomId,
-          quantity: r.quantity,
-          assignedRoomNumber: r.assignedRoomNumber || null,
-        })),
-      });
+        const data = await fetchRooms(checkIn, checkOut, initialData.cantPeople);
+        setAvailableRooms(data);
 
-      fetchRooms(initialData.initDate, initialData.finishDate, initialData.cantPeople);
-    } else if (!visible) {
-      form.resetFields();
-      setAvailableRooms([]);
-      setSummary({ subtotal: 0, iva: 0, total: 0, details: [], nights: 0 });
-    }
+        const formattedRooms = initialData.rooms?.map((r: any) => {
+          const room = data.find((ar) => ar.roomId === r.roomId);
+          return {
+            roomId: {
+              key: r.roomId,
+              value: r.roomId,
+              label: room ? `${room.name} – $${room.price}` : `${r.roomId}`,
+            },
+            quantity: r.quantity,
+            assignedRoomNumber: r.assignedRoomNumber || null,
+          };
+        });
+
+        form.setFieldsValue({
+          ...initialData,
+          initDate: dayjs(initialData.initDate),
+          finishDate: dayjs(initialData.finishDate),
+          rooms: formattedRooms,
+        });
+      }
+
+      if (!visible) {
+        form.resetFields();
+        setAvailableRooms([]);
+        setSummary({ subtotal: 0, iva: 0, total: 0, details: [], nights: 0 });
+      }
+    };
+
+    loadData();
   }, [visible, initialData]);
 
   const calculateSummary = () => {
@@ -90,49 +103,38 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 
     const checkIn = new Date(values.initDate);
     const checkOut = new Date(values.finishDate);
-    const nights = Math.max(
-      0,
-      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const nights = Math.max(0, (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
 
     let subtotal = 0;
     const details: string[] = [];
 
     for (const r of values.rooms) {
-      const room = availableRooms.find((ar) => ar.roomId === r.roomId);
+      const roomId = r.roomId?.value ?? r.roomId;
+      const room = availableRooms.find((ar) => ar.roomId === roomId);
       if (room && r.quantity > 0) {
         const totalRoom = room.price * r.quantity * nights;
         subtotal += totalRoom;
-        details.push(
-          `${room.name} × ${r.quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`
-        );
+        details.push(`${room.name} × ${r.quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
       }
     }
 
     const iva = subtotal * 0.13;
     const total = subtotal + iva;
 
-    setSummary({
-      subtotal,
-      iva,
-      total,
-      details,
-      nights,
-    });
-
+    setSummary({ subtotal, iva, total, details, nights });
     form.setFieldsValue({ payment: parseFloat(total.toFixed(2)) });
   };
 
   const handleValuesChange = () => {
     const { initDate, finishDate, cantPeople } = form.getFieldsValue();
     if (initDate && finishDate && cantPeople) {
-      fetchRooms(initDate.format("YYYY-MM-DD"), finishDate.format("YYYY-MM-DD"), cantPeople);
+      fetchRooms(initDate.format("YYYY-MM-DD"), finishDate.format("YYYY-MM-DD"), cantPeople)
+        .then(setAvailableRooms);
     }
     setTimeout(() => calculateSummary(), 100);
   };
 
   const handleFinish = async (values: any) => {
-    // Validar duplicados de número de habitación (asignados)
     const assignedNumbers = values.rooms
       .map((r: any) => r.assignedRoomNumber?.trim())
       .filter((num: string | undefined): num is string => !!num);
@@ -151,7 +153,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
       initDate: values.initDate.format("YYYY-MM-DD"),
       finishDate: values.finishDate.format("YYYY-MM-DD"),
       rooms: values.rooms.map((r: any) => ({
-        roomId: r.roomId,
+        roomId: r.roomId.value ?? r.roomId,
         quantity: r.quantity,
         assignedRoomNumber: r.assignedRoomNumber || null,
       })),
@@ -217,9 +219,13 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
                       name={[name, "roomId"]}
                       rules={[{ required: true, message: "Selecciona habitación" }]}
                     >
-                      <Select placeholder="Habitación">
+                      <Select placeholder="Habitación" labelInValue optionLabelProp="label">
                         {availableRooms.map((room) => (
-                          <Option key={room.roomId} value={room.roomId}>
+                          <Option
+                            key={room.roomId}
+                            value={room.roomId}
+                            label={`${room.name} – $${room.price}`}
+                          >
                             {room.name} – ${room.price}
                           </Option>
                         ))}
@@ -236,10 +242,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
                     </Form.Item>
                   </Col>
                   <Col span={7}>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "assignedRoomNumber"]}
-                    >
+                    <Form.Item {...restField} name={[name, "assignedRoomNumber"]}>
                       <Input placeholder="N° habitación (opcional)" />
                     </Form.Item>
                   </Col>
@@ -268,7 +271,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
               ))}
             </ul>
             <Text>Subtotal: ${summary.subtotal.toFixed(2)}</Text> <br />
-            <Text>IVA (10%): ${summary.iva.toFixed(2)}</Text> <br />
+            <Text>IVA (13%): ${summary.iva.toFixed(2)}</Text> <br />
             <Text strong>Total: ${summary.total.toFixed(2)}</Text>
           </Card>
         )}
@@ -279,7 +282,11 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
           <Input placeholder="Nombre del cliente" />
         </Form.Item>
 
-        <Form.Item name="email" label="Correo electrónico" rules={[{ required: true, type: "email" }]}>
+        <Form.Item
+          name="email"
+          label="Correo electrónico"
+          rules={[{ required: true, type: "email" }]}
+        >
           <Input placeholder="correo@ejemplo.com" />
         </Form.Item>
 
