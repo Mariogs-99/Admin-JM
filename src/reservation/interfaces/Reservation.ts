@@ -20,6 +20,6 @@ export interface Reservation {
     roomId: number;
     roomName: string;
     quantity: number;
-    assignedRoomNumber: string | null;
+    assignedRoomNumber: string | null | undefined;
   }[];
 }

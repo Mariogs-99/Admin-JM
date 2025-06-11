@@ -37,7 +37,7 @@ export const GetReservations = async (): Promise<Reservation[]> => {
 };
 
 // ==============================
-// 📝 Crear una nueva reserva
+// Crear una nueva reserva
 // ==============================
 
 export const SaveReservations = async (body: ReservationInput): Promise<void> => {
@@ -52,7 +52,7 @@ export const SaveReservations = async (body: ReservationInput): Promise<void> =>
 };
 
 // ==============================
-// ✏️ Actualizar reserva
+// Actualizar reserva
 // ==============================
 
 export const UpdateReservation = async (

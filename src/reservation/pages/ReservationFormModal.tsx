@@ -8,11 +8,10 @@ import {
   Select,
   Typography,
   message,
-  Divider,
   Button,
   Row,
   Col,
-  Card,
+  Divider,
 } from "antd";
 import dayjs from "dayjs";
 import {
@@ -63,7 +62,14 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
         const checkIn = dayjs(initialData.initDate).format("YYYY-MM-DD");
         const checkOut = dayjs(initialData.finishDate).format("YYYY-MM-DD");
 
-        const data = await fetchRooms(checkIn, checkOut, initialData.cantPeople);
+        let data = await fetchRooms(checkIn, checkOut, initialData.cantPeople);
+
+        for (const r of initialData.rooms || []) {
+          if (!data.find((ar) => ar.roomId === r.roomId)) {
+            data.push({ roomId: r.roomId, name: "Habitación no disponible", price: 0 });
+          }
+        }
+
         setAvailableRooms(data);
 
         const formattedRooms = initialData.rooms?.map((r: any) => {
@@ -75,7 +81,6 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
               label: room ? `${room.name} – $${room.price}` : `${r.roomId}`,
             },
             quantity: r.quantity,
-            assignedRoomNumber: r.assignedRoomNumber || null,
           };
         });
 
@@ -84,6 +89,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
           initDate: dayjs(initialData.initDate),
           finishDate: dayjs(initialData.finishDate),
           rooms: formattedRooms,
+          status: initialData.status || "FUTURA",
         });
       }
 
@@ -135,16 +141,19 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   };
 
   const handleFinish = async (values: any) => {
-    const assignedNumbers = values.rooms
-      .map((r: any) => r.assignedRoomNumber?.trim())
-      .filter((num: string | undefined): num is string => !!num);
+    if (values.finishDate.isBefore(values.initDate)) {
+      message.error("La fecha de salida no puede ser antes de la de entrada.");
+      return;
+    }
 
-    const duplicates = assignedNumbers.filter(
-      (num: string, i: number, arr: string[]) => arr.indexOf(num) !== i
-    );
+    const totalCapacity = values.rooms.reduce((sum: number, r: any) => {
+      const roomId = r.roomId?.value ?? r.roomId;
+      const room = availableRooms.find((ar) => ar.roomId === roomId);
+      return room ? sum + room.maxCapacity * r.quantity : sum;
+    }, 0);
 
-    if (duplicates.length > 0) {
-      message.error("Hay números de habitación duplicados. Verifica antes de guardar.");
+    if (totalCapacity < values.cantPeople) {
+      message.error(`La capacidad total (${totalCapacity}) no alcanza para ${values.cantPeople} persona(s).`);
       return;
     }
 
@@ -152,10 +161,11 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
       ...values,
       initDate: values.initDate.format("YYYY-MM-DD"),
       finishDate: values.finishDate.format("YYYY-MM-DD"),
+      payment: summary.total,
+      status: values.status,
       rooms: values.rooms.map((r: any) => ({
         roomId: r.roomId.value ?? r.roomId,
         quantity: r.quantity,
-        assignedRoomNumber: r.assignedRoomNumber || null,
       })),
     };
 
@@ -168,6 +178,14 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
         message.success("Reserva creada");
       }
 
+      await fetch(`${import.meta.env.VITE_BASE_URL}/api/availability/update`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      });
+
       form.resetFields();
       onSubmit();
     } catch {
@@ -178,10 +196,10 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   return (
     <Modal
       open={visible}
-      title={<Title level={5}>{initialData ? "Editar reserva" : "Nueva reserva"}</Title>}
+      title={<Title level={4}>{initialData ? "Editar reserva" : "Nueva reserva"}</Title>}
       onCancel={onCancel}
       footer={null}
-      width={720}
+      width={700}
       centered
     >
       <Form
@@ -189,122 +207,111 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
         layout="vertical"
         onFinish={handleFinish}
         onValuesChange={handleValuesChange}
+        style={{ maxWidth: 520, margin: "0 auto" }}
       >
+        <Form.Item label="Nombre" name="name" rules={[{ required: true }]}>
+          <Input size="large" placeholder="Nombre del cliente" />
+        </Form.Item>
+        <Form.Item label="Teléfono" name="phone" rules={[{ required: true }]}>
+          <Input size="large" placeholder="Ej: 7777-0000" />
+        </Form.Item>
+        <Form.Item label="Correo" name="email" rules={[{ required: true, type: "email" }]}> 
+          <Input size="large" placeholder="correo@ejemplo.com" />
+        </Form.Item>
         <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="initDate" label="Fecha de entrada" rules={[{ required: true }]}>
-              <DatePicker style={{ width: "100%" }} />
+          <Col span={12}>
+            <Form.Item label="Fecha de entrada" name="initDate" rules={[{ required: true }]}> 
+              <DatePicker size="large" style={{ width: "100%" }} />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item name="finishDate" label="Fecha de salida" rules={[{ required: true }]}>
-              <DatePicker style={{ width: "100%" }} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="cantPeople" label="Personas" rules={[{ required: true }]}>
-              <InputNumber min={1} style={{ width: "100%" }} />
+          <Col span={12}>
+            <Form.Item label="Fecha de salida" name="finishDate" rules={[{ required: true }]}> 
+              <DatePicker size="large" style={{ width: "100%" }} />
             </Form.Item>
           </Col>
         </Row>
+        <Form.Item label="Cantidad de personas" name="cantPeople" rules={[{ required: true }]}> 
+          <InputNumber size="large" min={1} style={{ width: "100%" }} />
+        </Form.Item>
+
+        {initialData && (
+          <Form.Item label="Estado" name="status" rules={[{ required: true }]}> 
+            <Select size="large">
+              <Option value="FUTURA">FUTURA</Option>
+              <Option value="ACTIVA">ACTIVA</Option>
+              <Option value="FINALIZADA">FINALIZADA</Option>
+            </Select>
+          </Form.Item>
+        )}
+
+        <Divider />
 
         <Form.List name="rooms">
           {(fields, { add, remove }) => (
             <>
-              {fields.map(({ key, name, ...restField }) => (
-                <Row gutter={12} key={key} style={{ marginBottom: 12 }}>
-                  <Col span={8}>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "roomId"]}
-                      rules={[{ required: true, message: "Selecciona habitación" }]}
-                    >
-                      <Select placeholder="Habitación" labelInValue optionLabelProp="label">
+              {fields.map((field, index) => (
+                <Row key={field.key} gutter={16} style={{ marginBottom: 8 }}>
+                  <Col span={16}>
+                    <Form.Item label={`Habitación #${index + 1}`} name={[field.name, "roomId"]} rules={[{ required: true }]}> 
+                      <Select
+                        showSearch
+                        size="large"
+                        placeholder="Selecciona habitación"
+                        optionFilterProp="label"
+                        disabled={availableRooms.length === 0}
+                      >
                         {availableRooms.map((room) => (
                           <Option
                             key={room.roomId}
                             value={room.roomId}
                             label={`${room.name} – $${room.price}`}
+                            disabled={room.availableQuantity <= 0}
                           >
-                            {room.name} – ${room.price}
+                            {`${room.name} – $${room.price} (${room.availableQuantity} disponibles)`}
                           </Option>
                         ))}
                       </Select>
                     </Form.Item>
                   </Col>
-                  <Col span={5}>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "quantity"]}
-                      rules={[{ required: true, message: "Cantidad requerida" }]}
-                    >
-                      <InputNumber min={1} style={{ width: "100%" }} />
+                  <Col span={6}>
+                    <Form.Item label="Cantidad" name={[field.name, "quantity"]} rules={[{ required: true }]}> 
+                      <InputNumber size="large" min={1} style={{ width: "100%" }} />
                     </Form.Item>
                   </Col>
-                  <Col span={7}>
-                    <Form.Item {...restField} name={[name, "assignedRoomNumber"]}>
-                      <Input placeholder="N° habitación (opcional)" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={4}>
-                    <Button danger onClick={() => remove(name)} style={{ marginTop: 2 }}>
-                      Eliminar
-                    </Button>
+                  <Col span={2} style={{ display: "flex", alignItems: "center" }}>
+                    <Button danger type="link" onClick={() => remove(field.name)}>Eliminar</Button>
                   </Col>
                 </Row>
               ))}
               <Form.Item>
                 <Button type="dashed" onClick={() => add()} block>
-                  Agregar habitación
+                  + Agregar habitación
                 </Button>
               </Form.Item>
             </>
           )}
         </Form.List>
 
-        {summary.details.length > 0 && (
-          <Card size="small" style={{ backgroundColor: "#f6ffed", marginTop: 10 }}>
-            <Text strong>Resumen de la reserva ({summary.nights} noche(s)):</Text>
-            <ul style={{ paddingLeft: "20px" }}>
-              {summary.details.map((detail, i) => (
-                <li key={i}>{detail}</li>
-              ))}
-            </ul>
-            <Text>Subtotal: ${summary.subtotal.toFixed(2)}</Text> <br />
-            <Text>IVA (13%): ${summary.iva.toFixed(2)}</Text> <br />
-            <Text strong>Total: ${summary.total.toFixed(2)}</Text>
-          </Card>
-        )}
-
         <Divider />
 
-        <Form.Item name="name" label="Nombre completo" rules={[{ required: true }]}>
-          <Input placeholder="Nombre del cliente" />
-        </Form.Item>
+        <div style={{ background: "#fafafa", padding: 16, borderRadius: 8, marginBottom: 24 }}>
+          <Title level={5}>Resumen de la reserva</Title>
+          <ul>
+            {summary.details.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+          <Text strong>Subtotal: ${summary.subtotal.toFixed(2)}</Text> <br />
+          <Text strong>IVA (13%): ${summary.iva.toFixed(2)}</Text> <br />
+          <Text strong>Total: ${summary.total.toFixed(2)}</Text>
+        </div>
 
-        <Form.Item
-          name="email"
-          label="Correo electrónico"
-          rules={[{ required: true, type: "email" }]}
-        >
-          <Input placeholder="correo@ejemplo.com" />
-        </Form.Item>
-
-        <Form.Item name="phone" label="Teléfono" rules={[{ required: true }]}>
-          <Input maxLength={9} placeholder="00000000" />
-        </Form.Item>
-
-        <Form.Item name="payment" label="Total con IVA" rules={[{ required: true }]}>
-          <InputNumber disabled style={{ width: "100%" }} prefix="$" />
-        </Form.Item>
-
-        <Row justify="end">
-          <Button onClick={onCancel} style={{ marginRight: 8 }}>
-            Cancelar
-          </Button>
-          <Button type="primary" htmlType="submit">
-            {initialData ? "Actualizar" : "Guardar"}
-          </Button>
+        <Row justify="center">
+          <Col>
+            <Button type="primary" htmlType="submit" size="large">
+              {initialData ? "Actualizar reserva" : "Crear reserva"}
+            </Button>
+          </Col>
         </Row>
       </Form>
     </Modal>
