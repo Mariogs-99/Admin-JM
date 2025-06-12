@@ -66,19 +66,32 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
 
   const ActionButtons = ({ record }: { record: Reservation }) => (
     <div className="flex gap-2">
-      <Button type="primary" onClick={() => handleEdit(record)}>
-        Editar
-      </Button>
-      <Button danger onClick={() => handleDeleteClick(record.reservationId)}>
-        Eliminar
-      </Button>
-      <Button onClick={() => handleAssignClick(record)}>
-        Asignar habitación
-      </Button>
+      <Button type="primary" onClick={() => handleEdit(record)}>Editar</Button>
+      <Button danger onClick={() => handleDeleteClick(record.reservationId)}>Eliminar</Button>
+      <Button onClick={() => handleAssignClick(record)}>Asignar habitación</Button>
     </div>
   );
 
   const columns = [
+    {
+      title: () => <SortableTitle title="Código de reserva" />,
+      dataIndex: "reservationCode",
+      key: "reservationCode",
+      render: (code: string) => (
+        <div className="flex items-center gap-2">
+          <span style={{ fontFamily: "monospace", fontSize: "0.9rem" }}>{code}</span>
+          <Button
+            size="small"
+            onClick={() => {
+              navigator.clipboard.writeText(code);
+              message.success("Código copiado");
+            }}
+          >
+            Copiar
+          </Button>
+        </div>
+      ),
+    },
     {
       title: () => <SortableTitle title="Huésped" sortedColumn={sortedInfo.columnKey === "name" ? sortedInfo : undefined} />,
       dataIndex: "name",

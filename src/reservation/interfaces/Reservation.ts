@@ -1,5 +1,7 @@
 export interface Reservation {
   reservationId: number;
+  reservationCode: string; // ✅ <-- AÑADE ESTO
+
   name: string;
   initDate: string;
   finishDate: string;
@@ -12,10 +14,6 @@ export interface Reservation {
   status: string;
   roomNumber: string;
 
-  // 🔁 Reemplazamos esto:
-  // room: { ... }
-
-  // ✅ Por esto:
   rooms: {
     roomId: number;
     roomName: string;
