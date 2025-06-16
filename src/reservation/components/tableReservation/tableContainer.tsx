@@ -7,20 +7,21 @@ interface ReservationFilters {
   roomName?: string;
   startDate?: string;
   endDate?: string;
+  reservationCode?: string; // ✅ Nuevo filtro
 }
 
 interface TableContainerProps {
   setResults: (count: number) => void;
   filters: ReservationFilters;
   refresh: boolean;
-  onEdit: (reservation: Reservation) => void; 
+  onEdit: (reservation: Reservation) => void;
 }
 
 export const TableContainer = ({
   setResults,
   filters,
   refresh,
-  onEdit, // ✅ necesario
+  onEdit,
 }: TableContainerProps) => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
@@ -64,6 +65,13 @@ export const TableContainer = ({
       filtered = filtered.filter((r) => new Date(r.finishDate) <= end);
     }
 
+    if (filters.reservationCode) {
+      const code = filters.reservationCode.trim().toLowerCase();
+      filtered = filtered.filter((r) =>
+        r.reservationCode.toLowerCase().includes(code)
+      );
+    }
+
     setFilteredReservations(filtered);
     setResults(filtered.length);
   };
@@ -72,7 +80,7 @@ export const TableContainer = ({
     <TableUI
       data={filteredReservations}
       onReservationUpdated={fetchReservations}
-      onEdit={onEdit} // ✅ se pasa correctamente
+      onEdit={onEdit}
     />
   );
 };

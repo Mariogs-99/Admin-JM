@@ -2,7 +2,7 @@
 
 export interface RoomResponse {
   roomId: number;
-  name: string;
+  nameEs: string;
   maxCapacity: number;
   description: string;
   price: number;

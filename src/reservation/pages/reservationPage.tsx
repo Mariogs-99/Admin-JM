@@ -8,6 +8,7 @@ interface ReservationFilters {
   room?: { name: string };
   startDate?: string;
   endDate?: string;
+  reservationCode?: string; // ✅ nuevo
 }
 
 export const ReservationPage = () => {
@@ -17,17 +18,16 @@ export const ReservationPage = () => {
   const [refresh, setRefresh] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<any>(null);
 
-
   const handleCreateOrUpdate = () => {
     setModalOpen(false);
+    setSelectedReservation(null);
     setRefresh((prev) => !prev);
   };
 
   const handleEdit = (reservation: any) => {
-  setSelectedReservation(reservation);
-  setModalOpen(true);
-};
-
+    setSelectedReservation(reservation);
+    setModalOpen(true);
+  };
 
   return (
     <div className="card">
@@ -39,18 +39,21 @@ export const ReservationPage = () => {
         onAdd={() => setModalOpen(true)}
       />
 
-        <TableContainer
+      <TableContainer
         setResults={setResults}
         filters={filters}
         refresh={refresh}
         onEdit={handleEdit}
       />
 
-
       <ReservationFormModal
         visible={modalOpen}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => {
+          setModalOpen(false);
+          setSelectedReservation(null);
+        }}
         onSubmit={handleCreateOrUpdate}
+        initialData={selectedReservation}
       />
     </div>
   );
