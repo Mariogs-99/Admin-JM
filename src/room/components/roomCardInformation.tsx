@@ -41,12 +41,13 @@ export const RoomCardInformation = ({
       title: () => (
         <SortableTitle
           title="Nombre de la Habitación"
-          sortedColumn={sortedInfo?.columnKey === "name" ? sortedInfo : undefined}
+          sortedColumn={sortedInfo?.columnKey === "nameEs" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: "name",
-      key: "name"
+      dataIndex: "nameEs",
+      key: "nameEs"
     },
+
     {
       title: () => (
         <SortableTitle
@@ -82,7 +83,7 @@ export const RoomCardInformation = ({
     {
       title: () => (
         <SortableTitle
-          title="Capacidad Máxima"
+          title="Capacidad maxima Huespedes"
           sortedColumn={sortedInfo?.columnKey === "maxCapacity" ? sortedInfo : undefined}
         />
       ),

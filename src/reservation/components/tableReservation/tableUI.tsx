@@ -19,6 +19,7 @@ const parseCreationDate = (value: any): Date => {
 interface TableUIProps {
   data: Reservation[];
   onReservationUpdated?: () => void;
+  onEdit: (reservation: Reservation) => void;
 }
 
 export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {

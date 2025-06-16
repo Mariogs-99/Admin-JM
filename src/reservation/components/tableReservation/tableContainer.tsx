@@ -4,7 +4,7 @@ import { Reservation } from "../../interfaces/Reservation";
 import { TableUI } from "./tableUI";
 
 interface ReservationFilters {
-  roomName?: string; // ✅ simplificado
+  roomName?: string;
   startDate?: string;
   endDate?: string;
 }
@@ -13,12 +13,14 @@ interface TableContainerProps {
   setResults: (count: number) => void;
   filters: ReservationFilters;
   refresh: boolean;
+  onEdit: (reservation: Reservation) => void; 
 }
 
 export const TableContainer = ({
   setResults,
   filters,
   refresh,
+  onEdit, // ✅ necesario
 }: TableContainerProps) => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
@@ -70,6 +72,7 @@ export const TableContainer = ({
     <TableUI
       data={filteredReservations}
       onReservationUpdated={fetchReservations}
+      onEdit={onEdit} // ✅ se pasa correctamente
     />
   );
 };

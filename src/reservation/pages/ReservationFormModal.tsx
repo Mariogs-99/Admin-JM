@@ -57,51 +57,63 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   };
 
   useEffect(() => {
-    const loadData = async () => {
-      if (visible && initialData) {
-        const checkIn = dayjs(initialData.initDate).format("YYYY-MM-DD");
-        const checkOut = dayjs(initialData.finishDate).format("YYYY-MM-DD");
+  const loadData = async () => {
+    if (visible && initialData) {
+      const checkIn = dayjs(initialData.initDate).format("YYYY-MM-DD");
+      const checkOut = dayjs(initialData.finishDate).format("YYYY-MM-DD");
 
-        let data = await fetchRooms(checkIn, checkOut, initialData.cantPeople);
+      let data = await fetchRooms(checkIn, checkOut, initialData.cantPeople);
 
-        for (const r of initialData.rooms || []) {
-          if (!data.find((ar) => ar.roomId === r.roomId)) {
-            data.push({ roomId: r.roomId, name: "Habitación no disponible", price: 0 });
-          }
-        }
-
-        setAvailableRooms(data);
-
-        const formattedRooms = initialData.rooms?.map((r: any) => {
-          const room = data.find((ar) => ar.roomId === r.roomId);
-          return {
-            roomId: {
-              key: r.roomId,
-              value: r.roomId,
-              label: room ? `${room.name} – $${room.price}` : `${r.roomId}`,
-            },
-            quantity: r.quantity,
-          };
+      for (const r of initialData.rooms || []) {
+        // Si la habitación de la reserva no está en el resultado de fetchRooms, la agregamos manualmente
+       if (!data.find((ar) => ar.roomId === r.roomId)) {
+        data.push({
+          roomId: r.roomId,
+          nameEs: r.roomName || "Habitación no disponible",   // ✅ usa roomName si viene
+          price: r.price ?? 0,
+          maxCapacity: r.maxCapacity ?? 1,
+          availableQuantity: r.quantity ?? 0,
         });
+}
 
-        form.setFieldsValue({
-          ...initialData,
-          initDate: dayjs(initialData.initDate),
-          finishDate: dayjs(initialData.finishDate),
-          rooms: formattedRooms,
-          status: initialData.status || "FUTURA",
-        });
       }
 
-      if (!visible) {
-        form.resetFields();
-        setAvailableRooms([]);
-        setSummary({ subtotal: 0, iva: 0, total: 0, details: [], nights: 0 });
-      }
-    };
+      setAvailableRooms(data);
 
-    loadData();
-  }, [visible, initialData]);
+      const formattedRooms = initialData.rooms?.map((r: any) => {
+        const room = data.find((ar) => ar.roomId === r.roomId);
+        return {
+          roomId: {
+            key: r.roomId,
+            value: r.roomId,
+            label: room ? `${room.nameEs} – $${room.price}` : `${r.roomId}`,
+          },
+          quantity: r.quantity,
+        };
+      });
+
+      form.setFieldsValue({
+        ...initialData,
+        initDate: dayjs(initialData.initDate),
+        finishDate: dayjs(initialData.finishDate),
+        rooms: formattedRooms,
+        status: initialData.status || "FUTURA",
+      });
+
+      // 🧠 Ejecutamos el cálculo después de setFieldsValue
+      setTimeout(() => calculateSummary(), 50);
+    }
+
+    if (!visible) {
+      form.resetFields();
+      setAvailableRooms([]);
+      setSummary({ subtotal: 0, iva: 0, total: 0, details: [], nights: 0 });
+    }
+  };
+
+  loadData();
+}, [visible, initialData]);
+
 
   const calculateSummary = () => {
     const values = form.getFieldsValue();
@@ -117,11 +129,16 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
     for (const r of values.rooms) {
       const roomId = r.roomId?.value ?? r.roomId;
       const room = availableRooms.find((ar) => ar.roomId === roomId);
-      if (room && r.quantity > 0) {
-        const totalRoom = room.price * r.quantity * nights;
+
+      //?calculo 
+      const quantity = Number(r.quantity) || 0;
+      if (room && quantity > 0) {
+        const totalRoom = room.price * quantity * nights;
         subtotal += totalRoom;
-        details.push(`${room.name} × ${r.quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
+        details.push(`${room.nameEs} × ${quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
       }
+
+
     }
 
     const iva = subtotal * 0.13;
@@ -252,22 +269,30 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
               {fields.map((field, index) => (
                 <Row key={field.key} gutter={16} style={{ marginBottom: 8 }}>
                   <Col span={16}>
-                    <Form.Item label={`Habitación #${index + 1}`} name={[field.name, "roomId"]} rules={[{ required: true }]}> 
-                      <Select
+                    <Form.Item
+                      label={`Habitación #${index + 1}`}
+                      name={[field.name, "roomId"]}
+                      rules={[{ required: true }]}
+                      shouldUpdate
+                    >
+
+                     <Select
                         showSearch
                         size="large"
                         placeholder="Selecciona habitación"
                         optionFilterProp="label"
                         disabled={availableRooms.length === 0}
+                        onChange={() => setTimeout(() => calculateSummary(), 50)} // 🧠 forzamos cálculo
                       >
+
                         {availableRooms.map((room) => (
                           <Option
                             key={room.roomId}
                             value={room.roomId}
-                            label={`${room.name} – $${room.price}`}
+                            label={`${room.nameEs} – $${room.price}`}
                             disabled={room.availableQuantity <= 0}
                           >
-                            {`${room.name} – $${room.price} (${room.availableQuantity} disponibles)`}
+                            {`${room.nameEs} – $${room.price} (${room.availableQuantity} disponibles)`}
                           </Option>
                         ))}
                       </Select>
@@ -275,7 +300,13 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
                   </Col>
                   <Col span={6}>
                     <Form.Item label="Cantidad" name={[field.name, "quantity"]} rules={[{ required: true }]}> 
-                      <InputNumber size="large" min={1} style={{ width: "100%" }} />
+                      <InputNumber
+                        size="large"
+                        min={1}
+                        style={{ width: "100%" }}
+                        onChange={() => setTimeout(() => calculateSummary(), 50)}
+                      />
+
                     </Form.Item>
                   </Col>
                   <Col span={2} style={{ display: "flex", alignItems: "center" }}>

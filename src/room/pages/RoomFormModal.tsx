@@ -46,8 +46,10 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
     if (visible && initialData) {
       const transformed = {
         ...initialData,
-        nameEs: initialData.name || initialData.nameEs,
-        descriptionEs: initialData.description || initialData.descriptionEs,
+        nameEs: initialData.nameEs,
+        nameEn: initialData.nameEn,
+        descriptionEs: initialData.descriptionEs,
+        descriptionEn: initialData.descriptionEn,
         categoryRoomId:
           initialData.categoryRoom?.categoryRoomId ?? initialData.categoryRoomId,
       };
@@ -60,12 +62,14 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
     try {
       const formData = new FormData();
       formData.append("nameEs", values.nameEs);
+      formData.append("nameEn", values.nameEn);
+      formData.append("descriptionEs", values.descriptionEs || "");
+      formData.append("descriptionEn", values.descriptionEn || "");
       formData.append("maxCapacity", values.maxCapacity.toString());
       formData.append("price", values.price.toString());
       formData.append("sizeBed", values.sizeBed);
-      formData.append("categoryRoomId", values.categoryRoomId.toString());
-      formData.append("descriptionEs", values.descriptionEs || "");
       formData.append("quantity", values.quantity.toString());
+      formData.append("categoryRoomId", values.categoryRoomId.toString());
 
       if (values.image instanceof File) {
         formData.append("image", values.image);
@@ -113,12 +117,18 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
       <Form layout="vertical" form={form} onFinish={handleFinish} style={{ marginTop: 8 }}>
         <Row gutter={[12, 8]}>
           <Col span={12}>
-            <Form.Item name="nameEs" label="Nombre" rules={[{ required: true }]}>
-              <Input placeholder="Ej. Habitación 101" style={inputStyle} />
+            <Form.Item name="nameEs" label="Nombre (ES)" rules={[{ required: true }]}>
+              <Input placeholder="Ej. Habitación Familiar" style={inputStyle} />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="quantity" label="Cantidad de cuartos disponible" rules={[{ required: true }]}>
+            <Form.Item name="nameEn" label="Nombre (EN)" rules={[{ required: true }]}>
+              <Input placeholder="e.g. Family Room" style={inputStyle} />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item name="quantity" label="Cantidad de cuartos disponibles" rules={[{ required: true }]}>
               <InputNumber min={0} style={{ width: "100%", ...inputStyle }} />
             </Form.Item>
           </Col>
@@ -128,6 +138,7 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
               <InputNumber min={1} max={10} style={{ width: "100%", ...inputStyle }} />
             </Form.Item>
           </Col>
+
           <Col span={12}>
             <Form.Item name="price" label="Precio por noche" rules={[{ required: true }]}>
               <InputNumber
@@ -145,7 +156,8 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
               <Input placeholder="Ej. Queen" style={inputStyle} />
             </Form.Item>
           </Col>
-          <Col span={12}>
+
+          <Col span={24}>
             <Form.Item name="categoryRoomId" label="Categoría" rules={[{ required: true }]}>
               <Select placeholder="Selecciona una categoría" style={{ ...inputStyle, width: "100%" }}>
                 {categories.map((cat) => (
@@ -158,9 +170,17 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
           </Col>
         </Row>
 
-        <Form.Item name="descriptionEs" label="Descripción">
+        <Form.Item name="descriptionEs" label="Descripción (ES)">
           <Input.TextArea
-            placeholder="Descripción breve de la habitación"
+            placeholder="Descripción breve en español"
+            style={{ borderRadius: 6, padding: 10 }}
+            autoSize={{ minRows: 2, maxRows: 4 }}
+          />
+        </Form.Item>
+
+        <Form.Item name="descriptionEn" label="Descripción (EN)">
+          <Input.TextArea
+            placeholder="Brief description in English"
             style={{ borderRadius: 6, padding: 10 }}
             autoSize={{ minRows: 2, maxRows: 4 }}
           />
@@ -176,12 +196,7 @@ export const RoomFormModal: FC<RoomFormModalProps> = ({
           }}
           rules={[{ required: !initialData, message: "La imagen es requerida" }]}
         >
-          <Upload
-            accept="image/*"
-            maxCount={1}
-            showUploadList
-            beforeUpload={() => false}
-          >
+          <Upload accept="image/*" maxCount={1} showUploadList beforeUpload={() => false}>
             <Button icon={<UploadOutlined />} size="middle">
               Seleccionar imagen
             </Button>

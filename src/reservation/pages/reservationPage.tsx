@@ -15,11 +15,19 @@ export const ReservationPage = () => {
   const [filters, setFilters] = useState<ReservationFilters>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState<any>(null);
+
 
   const handleCreateOrUpdate = () => {
     setModalOpen(false);
     setRefresh((prev) => !prev);
   };
+
+  const handleEdit = (reservation: any) => {
+  setSelectedReservation(reservation);
+  setModalOpen(true);
+};
+
 
   return (
     <div className="card">
@@ -31,11 +39,13 @@ export const ReservationPage = () => {
         onAdd={() => setModalOpen(true)}
       />
 
-      <TableContainer
+        <TableContainer
         setResults={setResults}
         filters={filters}
         refresh={refresh}
+        onEdit={handleEdit}
       />
+
 
       <ReservationFormModal
         visible={modalOpen}

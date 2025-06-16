@@ -1,6 +1,6 @@
 export interface Reservation {
   reservationId: number;
-  reservationCode: string; // ✅ <-- AÑADE ESTO
+  reservationCode: string;
 
   name: string;
   initDate: string;
@@ -18,6 +18,8 @@ export interface Reservation {
     roomId: number;
     roomName: string;
     quantity: number;
+    price: number;           // ✅ nuevo campo necesario para calcular total
+    maxCapacity: number;     // ✅ nuevo campo necesario para validar capacidad
     assignedRoomNumber: string | null | undefined;
   }[];
 }
