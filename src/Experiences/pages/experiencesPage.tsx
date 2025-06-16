@@ -1,7 +1,10 @@
 import { Modal, message } from "antd";
 import { useEffect, useState } from "react";
 import { Title } from "../../shared/text/title";
-import { getExperiences, deleteExperience } from "../services/experiencesServices";
+import {
+  getExperiences,
+  deleteExperience,
+} from "../services/experiencesServices";
 import { Experience } from "../interfaces/Experience";
 import ExperienceFormModal from "./ExperienceFormModal";
 import { ExperienceCardInformation } from "./ExperienceCardInformation";
@@ -28,7 +31,18 @@ function ExperiencesPage() {
   }, []);
 
   const handleEdit = (experience: Experience) => {
-    setEditingExperience(experience);
+    // ✅ Adaptar campos por si vienen como 'title', 'description', 'availableDays'
+    const adapted: Experience = {
+      ...experience,
+      titleEs: experience.titleEs ?? (experience as any).title ?? "",
+      titleEn: experience.titleEn ?? "",
+      descriptionEs: experience.descriptionEs ?? (experience as any).description ?? "",
+      descriptionEn: experience.descriptionEn ?? "",
+      availableDaysEs: experience.availableDaysEs ?? (experience as any).availableDays ?? "",
+      availableDaysEn: experience.availableDaysEn ?? "",
+    };
+
+    setEditingExperience(adapted);
     setModalVisible(true);
   };
 
@@ -93,7 +107,7 @@ function ExperiencesPage() {
 
       <Modal
         open={confirmVisible}
-        title={`¿Eliminar experiencia "${experienceToDelete?.title}"?`}
+        title={`¿Eliminar experiencia "${experienceToDelete?.titleEs || ""}"?`}
         onOk={confirmDelete}
         onCancel={() => {
           setConfirmVisible(false);

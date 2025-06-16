@@ -11,12 +11,12 @@ import {
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { Experience } from "../interfaces/Experience";
 import {
   createExperience,
   updateExperience,
   uploadImage,
 } from "../services/experiencesServices";
+import { Experience } from "../interfaces/Experience";
 
 interface ExperienceFormModalProps {
   visible: boolean;
@@ -61,6 +61,7 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
       setImagePreview("");
       onSubmit();
     } catch (error) {
+      console.error(error);
       message.error("Hubo un error al guardar la experiencia");
     }
   };
@@ -104,30 +105,53 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
         onFinish={handleFinish}
         style={{ maxHeight: "100%", overflowY: "auto" }}
       >
+        {/* Título ES */}
         <Form.Item
-          label="Título"
-          name="title"
-          rules={[{ required: true, message: "El título es requerido" }]}
+          label="Título (ES)"
+          name="titleEs"
+          rules={[{ required: true, message: "El título en español es requerido" }]}
         >
           <Input />
         </Form.Item>
 
+        {/* Título EN */}
         <Form.Item
-          label="Descripción"
-          name="description"
-          rules={[{ required: true, message: "La descripción es requerida" }]}
+          label="Título (EN)"
+          name="titleEn"
+          rules={[{ required: true, message: "El título en inglés es requerido" }]}
+        >
+          <Input />
+        </Form.Item>
+
+        {/* Descripción ES */}
+        <Form.Item
+          label="Descripción (ES)"
+          name="descriptionEs"
+          rules={[{ required: true, message: "La descripción en español es requerida" }]}
         >
           <Input.TextArea rows={3} />
         </Form.Item>
 
+        {/* Descripción EN */}
+        <Form.Item
+          label="Descripción (EN)"
+          name="descriptionEn"
+          rules={[{ required: true, message: "La descripción en inglés es requerida" }]}
+        >
+          <Input.TextArea rows={3} />
+        </Form.Item>
+
+        {/* Duración */}
         <Form.Item label="Duración" name="duration">
           <Input placeholder="Ej: 2 horas" />
         </Form.Item>
 
+        {/* Capacidad */}
         <Form.Item label="Capacidad" name="capacity">
           <InputNumber min={1} style={{ width: "100%" }} />
         </Form.Item>
 
+        {/* Precio */}
         <Form.Item label="Precio ($)" name="price">
           <InputNumber
             min={0}
@@ -140,14 +164,22 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
           />
         </Form.Item>
 
-        <Form.Item label="Días disponibles" name="availableDays">
+        {/* Días disponibles ES */}
+        <Form.Item label="Días disponibles (ES)" name="availableDaysEs">
           <Input placeholder="Ej: Lunes a Sábado" />
         </Form.Item>
 
+        {/* Días disponibles EN */}
+        <Form.Item label="Días disponibles (EN)" name="availableDaysEn">
+          <Input placeholder="Ej: Monday to Saturday" />
+        </Form.Item>
+
+        {/* Campo oculto para nombre de imagen */}
         <Form.Item name="imageUrl" hidden>
           <Input />
         </Form.Item>
 
+        {/* Subida de imagen */}
         <Form.Item label="Imagen">
           <Upload
             name="file"
@@ -159,6 +191,7 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
           </Upload>
         </Form.Item>
 
+        {/* Vista previa */}
         {imagePreview && (
           <Form.Item>
             <Image
@@ -170,6 +203,7 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
           </Form.Item>
         )}
 
+        {/* Activo */}
         <Form.Item label="Activo" name="active" valuePropName="checked">
           <Switch defaultChecked />
         </Form.Item>
