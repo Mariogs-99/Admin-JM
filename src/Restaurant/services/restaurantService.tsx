@@ -53,7 +53,7 @@ export const SaveRestaurant = async (formData: FormData): Promise<void> => {
 };
 
 // ✅ Actualizar restaurante (con imagen y PDF)
-export const UpdateRestaurantWithFiles = async (id: number, formData: FormData): Promise<void> => {
+export const UpdateRestaurantWithFiles = async (id: number, formData: FormData, imageFile: File | null, pdfFile: File | null): Promise<void> => {
   try {
     await axios.put(`${BASE_URL}/api/restaurant/with-files/${id}`, formData, {
       headers: {

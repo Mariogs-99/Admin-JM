@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Space, Image, Tag, message, Popconfirm } from "antd";
+import {
+  Table,
+  Button,
+  Space,
+  Image,
+  Tag,
+  message,
+  Popconfirm,
+  Tooltip,
+} from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Restaurant } from "../interfaces/restaurantInterface";
 import { GetRestaurants, DeleteRestaurant } from "../services/restaurantService";
@@ -10,7 +19,10 @@ interface RestaurantTableAdminProps {
   refresh?: boolean;
 }
 
-export const RestaurantTableAdmin = ({ onEdit, refresh }: RestaurantTableAdminProps) => {
+export const RestaurantTableAdmin = ({
+  onEdit,
+  refresh,
+}: RestaurantTableAdminProps) => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
   const [sortedInfo, setSortedInfo] = useState<any>({});
@@ -28,7 +40,7 @@ export const RestaurantTableAdmin = ({ onEdit, refresh }: RestaurantTableAdminPr
 
   useEffect(() => {
     fetchRestaurants();
-  }, [refresh]); // ✅ recarga cuando cambia la prop refresh
+  }, [refresh]);
 
   const handleDelete = async (id: number) => {
     try {
@@ -61,22 +73,35 @@ export const RestaurantTableAdmin = ({ onEdit, refresh }: RestaurantTableAdminPr
     {
       title: () => (
         <SortableTitle
-          title="Nombre"
+          title="Nombre (ES / EN)"
           sortedColumn={sortedInfo?.columnKey === "name" ? sortedInfo : undefined}
         />
       ),
       dataIndex: "name",
       key: "name",
+      render: (_: any, record: Restaurant) => (
+        <>
+          <strong>{record.name}</strong>
+          <br />
+          <span className="text-gray-500 text-sm italic">{record.nameEn}</span>
+        </>
+      ),
     },
     {
       title: () => (
         <SortableTitle
-          title="Horario"
+          title="Horario (ES / EN)"
           sortedColumn={sortedInfo?.columnKey === "schedule" ? sortedInfo : undefined}
         />
       ),
       dataIndex: "schedule",
       key: "schedule",
+      render: (_: any, record: Restaurant) => (
+        <>
+          <div>{record.schedule}</div>
+          <div className="text-gray-500 text-sm italic">{record.scheduleEn}</div>
+        </>
+      ),
     },
     {
       title: () => (
