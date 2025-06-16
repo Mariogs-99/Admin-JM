@@ -5,17 +5,20 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Interfaz para los eventos
 export interface EventDTO {
-  id?: number;
-  title: string;
-  description: string;
-  eventDate: string; // ISO (YYYY-MM-DD)
+  id: number;
+  titleEs: string;
+  titleEn: string;
+  descriptionEs: string;
+  descriptionEn: string;
+  eventDate: number[];
   capacity: number;
   price: number;
   imageUrl?: string;
   active: boolean;
 }
 
-// Obtener todos los eventos
+
+// Obtener eventos públicos (cliente)
 export const GetEvents = async (): Promise<EventDTO[]> => {
   try {
     const response = await axios.get(`${BASE_URL}/api/events`, {
@@ -26,7 +29,39 @@ export const GetEvents = async (): Promise<EventDTO[]> => {
     });
     return response.data;
   } catch (error) {
-    console.error("Error al obtener eventos:", error);
+    console.error("Error al obtener eventos públicos:", error);
+    throw error;
+  }
+};
+
+// Obtener todos los eventos (admin)
+export const GetAllEventsAdmin = async (): Promise<EventDTO[]> => {
+  try {
+    const response = await axios.get(`${BASE_URL}/api/events/all`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener eventos (admin):", error);
+    throw error;
+  }
+};
+
+// Obtener un evento por ID
+export const GetEventById = async (id: number): Promise<EventDTO> => {
+  try {
+    const response = await axios.get(`${BASE_URL}/api/events/${id}`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener evento por ID:", error);
     throw error;
   }
 };
@@ -74,22 +109,17 @@ export const DeleteEvent = async (id: number): Promise<void> => {
   }
 };
 
-
-// Vista de eventos del administrador
-
-// Obtener todos los eventos (admin)
-export const GetAllEventsAdmin = async (): Promise<EventDTO[]> => {
+// Activar o desactivar evento
+export const ToggleEventStatus = async (id: number, active: boolean): Promise<void> => {
   try {
-    const response = await axios.get(`${BASE_URL}/api/events/all`, {
+    await axios.patch(`${BASE_URL}/api/events/${id}/status`, { active }, {
       headers: {
         Authorization: `Bearer ${getToken()}`,
         "Content-Type": "application/json",
       },
     });
-    return response.data;
   } catch (error) {
-    console.error("Error al obtener eventos (admin):", error);
+    console.error("Error al cambiar el estado del evento:", error);
     throw error;
   }
 };
-

@@ -54,8 +54,10 @@ export const EventFormModal: FC<EventFormModalProps> = ({
       const values = await form.validateFields();
 
       const formData = new FormData();
-      formData.append("title", values.title);
-      formData.append("description", values.description);
+      formData.append("titleEs", values.titleEs);
+      formData.append("titleEn", values.titleEn);
+      formData.append("descriptionEs", values.descriptionEs);
+      formData.append("descriptionEn", values.descriptionEn);
       formData.append("eventDate", values.eventDate.format("YYYY-MM-DD"));
       formData.append("capacity", values.capacity.toString());
       formData.append("price", values.price.toString());
@@ -108,24 +110,29 @@ export const EventFormModal: FC<EventFormModalProps> = ({
       <Form layout="vertical" form={form} onFinish={handleSubmit} style={{ marginTop: 8 }}>
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="title" label="Título" rules={[{ required: true }]}>
-              <Input placeholder="Nombre del evento" style={inputStyle} />
+            <Form.Item name="titleEs" label="Título (ES)" rules={[{ required: true }]}>
+              <Input placeholder="Título en español" style={inputStyle} />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="eventDate" label="Fecha del evento" rules={[{ required: true }]}>
-              <DatePicker format="YYYY-MM-DD" style={{ width: "100%", ...inputStyle }} />
+            <Form.Item name="titleEn" label="Título (EN)" rules={[{ required: true }]}>
+              <Input placeholder="Title in English" style={inputStyle} />
             </Form.Item>
           </Col>
         </Row>
 
         <Row gutter={16}>
           <Col span={12}>
+            <Form.Item name="eventDate" label="Fecha del evento" rules={[{ required: true }]}>
+              <DatePicker format="YYYY-MM-DD" style={{ width: "100%", ...inputStyle }} />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
             <Form.Item name="capacity" label="Capacidad" rules={[{ required: true }]}>
               <InputNumber min={1} style={{ width: "100%", ...inputStyle }} />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={6}>
             <Form.Item name="price" label="Precio ($)" rules={[{ required: true }]}>
               <InputNumber
                 min={0}
@@ -138,13 +145,26 @@ export const EventFormModal: FC<EventFormModalProps> = ({
           </Col>
         </Row>
 
-        <Form.Item name="description" label="Descripción" rules={[{ required: true }]}>
-          <Input.TextArea
-            placeholder="Breve descripción"
-            style={{ borderRadius: 6, padding: 10 }}
-            autoSize={{ minRows: 2, maxRows: 4 }}
-          />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="descriptionEs" label="Descripción (ES)" rules={[{ required: true }]}>
+              <Input.TextArea
+                placeholder="Descripción en español"
+                style={{ borderRadius: 6, padding: 10 }}
+                autoSize={{ minRows: 2, maxRows: 4 }}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="descriptionEn" label="Descripción (EN)" rules={[{ required: true }]}>
+              <Input.TextArea
+                placeholder="Description in English"
+                style={{ borderRadius: 6, padding: 10 }}
+                autoSize={{ minRows: 2, maxRows: 4 }}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Row gutter={16}>
           <Col span={12}>

@@ -37,7 +37,7 @@ function EventPage() {
   const handleDelete = async (event: EventDTO) => {
     const confirm = await Swal.fire({
       title: "¿Eliminar evento?",
-      text: `¿Estás seguro de eliminar "${event.title}"? Esta acción no se puede deshacer.`,
+      text: `¿Estás seguro de eliminar "${event.titleEs}"? Esta acción no se puede deshacer.`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Sí, eliminar",

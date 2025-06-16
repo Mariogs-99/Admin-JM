@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Table, Button, Space, Image } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { SortableTitle } from '../../reservation/components/sort/title/sortableTitle';
-import { EventDTO } from '../services/eventServices';
-import dayjs from 'dayjs';
-import 'dayjs/locale/es';
-dayjs.locale('es');
+import { useState } from "react";
+import { Table, Button, Space, Image } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { SortableTitle } from "../../reservation/components/sort/title/sortableTitle";
+import { EventDTO } from "../services/eventServices";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+
+dayjs.locale("es");
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_URL || "";
 const DEFAULT_EVENT_IMAGE = "/images/default-event.webp";
@@ -29,8 +30,8 @@ export const EventCardInformation = ({
   const columns = [
     {
       title: "Imagen",
-      dataIndex: 'imageUrl',
-      key: 'imageUrl',
+      dataIndex: "imageUrl",
+      key: "imageUrl",
       render: (imageUrl?: string | null) => (
         <Image
           width={64}
@@ -46,53 +47,52 @@ export const EventCardInformation = ({
       title: () => (
         <SortableTitle
           title="Evento"
-          sortedColumn={sortedInfo?.columnKey === 'title' ? sortedInfo : undefined}
+          sortedColumn={sortedInfo?.columnKey === "titleEs" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: 'title',
-      key: 'title',
+      dataIndex: "titleEs",
+      key: "titleEs",
     },
     {
       title: () => (
         <SortableTitle
           title="Descripción"
-          sortedColumn={sortedInfo?.columnKey === 'description' ? sortedInfo : undefined}
+          sortedColumn={sortedInfo?.columnKey === "descriptionEs" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: 'description',
-      key: 'description',
-      // eliminamos ellipsis para permitir texto completo
+      dataIndex: "descriptionEs",
+      key: "descriptionEs",
     },
     {
       title: () => (
         <SortableTitle
           title="Fecha"
-          sortedColumn={sortedInfo?.columnKey === 'eventDate' ? sortedInfo : undefined}
+          sortedColumn={sortedInfo?.columnKey === "eventDate" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: 'eventDate',
-      key: 'eventDate',
+      dataIndex: "eventDate",
+      key: "eventDate",
       render: (date: string) => dayjs(date).format("D [de] MMMM [de] YYYY"),
     },
     {
       title: () => (
         <SortableTitle
           title="Capacidad"
-          sortedColumn={sortedInfo?.columnKey === 'capacity' ? sortedInfo : undefined}
+          sortedColumn={sortedInfo?.columnKey === "capacity" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: 'capacity',
-      key: 'capacity',
+      dataIndex: "capacity",
+      key: "capacity",
     },
     {
       title: () => (
         <SortableTitle
           title="Precio"
-          sortedColumn={sortedInfo?.columnKey === 'price' ? sortedInfo : undefined}
+          sortedColumn={sortedInfo?.columnKey === "price" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: 'price',
-      key: 'price',
+      dataIndex: "price",
+      key: "price",
       render: (price: number) => (
         <span style={{ fontWeight: 500 }}>{`$ ${price.toFixed(2)}`}</span>
       ),
@@ -101,20 +101,20 @@ export const EventCardInformation = ({
       title: () => (
         <SortableTitle
           title="Estado"
-          sortedColumn={sortedInfo?.columnKey === 'active' ? sortedInfo : undefined}
+          sortedColumn={sortedInfo?.columnKey === "active" ? sortedInfo : undefined}
         />
       ),
-      dataIndex: 'active',
-      key: 'active',
+      dataIndex: "active",
+      key: "active",
       render: (active: boolean) => (
-        <span className={`font-semibold ${active ? 'text-green-600' : 'text-red-500'}`}>
-          {active ? 'Activo' : 'Inactivo'}
+        <span className={`font-semibold ${active ? "text-green-600" : "text-red-500"}`}>
+          {active ? "Activo" : "Inactivo"}
         </span>
       ),
     },
     {
-      title: 'Acciones',
-      key: 'actions',
+      title: "Acciones",
+      key: "actions",
       render: (_: any, record: EventDTO) => (
         <Space size="middle">
           <Button
@@ -150,7 +150,6 @@ export const EventCardInformation = ({
         columns={columns}
         pagination={{ pageSize: 6 }}
         onChange={handleChange}
-        
       />
     </div>
   );
