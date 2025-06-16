@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Button, message, Row, Col } from "antd";
+import { Modal, Form, Input, message, Row, Col } from "antd";
 import { useState, useEffect } from "react";
 import { assignRoomNumbers, RoomAssignment } from "../services/reservationService";
 import { Reservation } from "../interfaces/Reservation";
@@ -34,6 +34,16 @@ export const AssignRoomModal = ({
     try {
       const values = await form.validateFields();
       if (!reservation) return;
+
+      // ✅ Validación de duplicados locales
+      const assignedNumbers = reservation.rooms.map((_, index) => values[`room_${index}`]?.trim());
+      const duplicates = assignedNumbers.filter(
+        (item, index) => item && assignedNumbers.indexOf(item) !== index
+      );
+      if (duplicates.length > 0) {
+        message.error("No puedes asignar el mismo número de habitación más de una vez.");
+        return;
+      }
 
       const payload: RoomAssignment[] = reservation.rooms.map((room, index) => ({
         roomId: room.roomId,
