@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from "react";
+import { useWatch } from "antd/es/form/Form";
 import {
   Modal,
   Form,
@@ -37,6 +38,10 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   initialData,
 }) => {
   const [form] = Form.useForm();
+  const watchedRooms = useWatch("rooms", form);
+  const watchedInit = useWatch("initDate", form);
+  const watchedFinish = useWatch("finishDate", form);
+
   const [availableRooms, setAvailableRooms] = useState<any[]>([]);
   const [summary, setSummary] = useState({
     subtotal: 0,
@@ -56,41 +61,32 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
     }
   };
 
-  useEffect(() => {
+ useEffect(() => {
   const loadData = async () => {
     if (visible && initialData) {
       const checkIn = dayjs(initialData.initDate).format("YYYY-MM-DD");
       const checkOut = dayjs(initialData.finishDate).format("YYYY-MM-DD");
 
-      let data = await fetchRooms(checkIn, checkOut, initialData.cantPeople);
+      const data = await fetchRooms(checkIn, checkOut, initialData.cantPeople);
 
       for (const r of initialData.rooms || []) {
-        // Si la habitación de la reserva no está en el resultado de fetchRooms, la agregamos manualmente
-       if (!data.find((ar) => ar.roomId === r.roomId)) {
-        data.push({
-          roomId: r.roomId,
-          nameEs: r.roomName || "Habitación no disponible",   // ✅ usa roomName si viene
-          price: r.price ?? 0,
-          maxCapacity: r.maxCapacity ?? 1,
-          availableQuantity: r.quantity ?? 0,
-        });
-}
-
+        if (!data.find((ar) => ar.roomId === r.roomId)) {
+          data.push({
+            roomId: r.roomId,
+            nameEs: r.roomName || "Habitación no disponible",
+            price: r.price ?? 0,
+            maxCapacity: r.maxCapacity ?? 1,
+            availableQuantity: r.quantity ?? 0,
+          });
+        }
       }
 
       setAvailableRooms(data);
 
-      const formattedRooms = initialData.rooms?.map((r: any) => {
-        const room = data.find((ar) => ar.roomId === r.roomId);
-        return {
-          roomId: {
-            key: r.roomId,
-            value: r.roomId,
-            label: room ? `${room.nameEs} – $${room.price}` : `${r.roomId}`,
-          },
-          quantity: r.quantity,
-        };
-      });
+      const formattedRooms = initialData.rooms?.map((r: any) => ({
+        roomId: r.roomId,      // ✅ valor simple
+        quantity: r.quantity,
+      }));
 
       form.setFieldsValue({
         ...initialData,
@@ -100,8 +96,6 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
         status: initialData.status || "FUTURA",
       });
 
-      // 🧠 Ejecutamos el cálculo después de setFieldsValue
-      setTimeout(() => calculateSummary(), 50);
     }
 
     if (!visible) {
@@ -115,38 +109,38 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 }, [visible, initialData]);
 
 
+
   const calculateSummary = () => {
-    const values = form.getFieldsValue();
-    if (!values.rooms || !values.initDate || !values.finishDate) return;
+  const values = form.getFieldsValue();
+  if (!values.rooms || !values.initDate || !values.finishDate) return;
 
-    const checkIn = new Date(values.initDate);
-    const checkOut = new Date(values.finishDate);
-    const nights = Math.max(0, (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+  const checkIn = new Date(values.initDate);
+  const checkOut = new Date(values.finishDate);
+  const nights = Math.max(0, (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
 
-    let subtotal = 0;
-    const details: string[] = [];
+  let subtotal = 0;
+  const details: string[] = [];
 
-    for (const r of values.rooms) {
-      const roomId = r.roomId?.value ?? r.roomId;
-      const room = availableRooms.find((ar) => ar.roomId === roomId);
+  for (const r of values.rooms) {
+    const room = availableRooms.find((ar) => ar.roomId === r.roomId); // 👈 directo
 
-      //?calculo 
-      const quantity = Number(r.quantity) || 0;
-      if (room && quantity > 0) {
-        const totalRoom = room.price * quantity * nights;
-        subtotal += totalRoom;
-        details.push(`${room.nameEs} × ${quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
-      }
-
-
+    const quantity = Number(r.quantity) || 0;
+    if (room && quantity > 0) {
+      const totalRoom = room.price * quantity * nights;
+      subtotal += totalRoom;
+      details.push(`${room.nameEs} × ${quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
     }
+  }
 
-    const iva = subtotal * 0.13;
-    const total = subtotal + iva;
+  const iva = subtotal * 0.13;
+  const total = subtotal + iva;
 
-    setSummary({ subtotal, iva, total, details, nights });
-    form.setFieldsValue({ payment: parseFloat(total.toFixed(2)) });
-  };
+  setSummary({ subtotal, iva, total, details, nights });
+  form.setFieldsValue({ payment: parseFloat(total.toFixed(2)) });
+
+  
+};
+
 
   const handleValuesChange = () => {
     const { initDate, finishDate, cantPeople } = form.getFieldsValue();
@@ -209,6 +203,19 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
       message.error("Error al guardar la reserva");
     }
   };
+
+  useEffect(() => {
+  if (
+    watchedRooms &&
+    watchedRooms.length > 0 &&
+    watchedInit &&
+    watchedFinish &&
+    availableRooms.length > 0
+  ) {
+    calculateSummary();
+  }
+}, [watchedRooms, watchedInit, watchedFinish, availableRooms]);
+
 
   return (
     <Modal
