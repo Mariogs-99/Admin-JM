@@ -29,9 +29,15 @@ export const ExperienceCardInformation = ({
       ),
     },
     {
-      title: "Título",
-      dataIndex: "title",
+      title: "Título (ES / EN)",
       key: "title",
+      render: (_: any, record: Experience) => (
+        <>
+          <strong>{record.titleEs}</strong>
+          <br />
+          <span className="text-gray-500 text-sm italic">{record.titleEn}</span>
+        </>
+      ),
     },
     {
       title: "Duración",
@@ -49,11 +55,6 @@ export const ExperienceCardInformation = ({
       key: "price",
       render: (price: number) =>
         `$ ${price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
-    },
-    {
-      title: "Disponible",
-      dataIndex: "availableDays",
-      key: "availableDays",
     },
     {
       title: "Estado",
