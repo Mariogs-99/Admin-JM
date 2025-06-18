@@ -332,17 +332,45 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 
         <Divider />
 
-        <div style={{ background: "#fafafa", padding: 16, borderRadius: 8, marginBottom: 24 }}>
-          <Title level={5}>Resumen de la reserva</Title>
-          <ul>
-            {summary.details.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-          <Text strong>Subtotal: ${summary.subtotal.toFixed(2)}</Text> <br />
-          <Text strong>IVA (13%): ${summary.iva.toFixed(2)}</Text> <br />
-          <Text strong>Total: ${summary.total.toFixed(2)}</Text>
+      <div
+  style={{
+    backgroundColor: "#f0f2f5",
+    padding: "20px",
+    borderRadius: "12px",
+    marginBottom: 32,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+  }}
+>
+  <Title level={4} style={{ marginBottom: 12 }}>Resumen de la reserva</Title>
+
+  {summary.details.length > 0 ? (
+    <div style={{ marginBottom: 16 }}>
+      {summary.details.map((item, index) => (
+        <div key={index} style={{ marginBottom: 4, fontSize: "15px" }}>
+          • {item}
         </div>
+      ))}
+    </div>
+  ) : (
+    <Text type="secondary">No hay habitaciones seleccionadas aún.</Text>
+  )}
+
+  <Divider style={{ margin: "12px 0" }} />
+
+  <div style={{ fontSize: "16px", marginBottom: 4 }}>
+    <Text>Subtotal:</Text>
+    <Text style={{ float: "right" }} strong>${summary.subtotal.toFixed(2)}</Text>
+  </div>
+  <div style={{ fontSize: "16px", marginBottom: 4 }}>
+    <Text>IVA (13%):</Text>
+    <Text style={{ float: "right" }} strong>${summary.iva.toFixed(2)}</Text>
+  </div>
+  <div style={{ fontSize: "17px", marginTop: 8 }}>
+    <Text strong>Total:</Text>
+    <Text style={{ float: "right" }} strong>${summary.total.toFixed(2)}</Text>
+  </div>
+</div>
+
 
         <Row justify="center">
           <Col>
