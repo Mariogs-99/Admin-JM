@@ -1,9 +1,9 @@
-import { Button, Modal } from "antd";
+import { Modal } from "antd";
 import { useState } from "react";
-import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
+import {  EyeOutlined } from "@ant-design/icons";
 
 export const MapPreviewComponent = () => {
-    const [previewMap, setPreviewMap] = useState(false)
+
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const showModal = () => {

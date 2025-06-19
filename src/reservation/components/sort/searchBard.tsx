@@ -1,7 +1,7 @@
 const SearchBard = () => {
     return ( 
         <>
-            <Input></Input>
+            
         </>
      );
 }

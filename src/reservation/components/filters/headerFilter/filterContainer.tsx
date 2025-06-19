@@ -69,7 +69,6 @@ export const FilterContainer = ({ results, setFilters, onAdd }: FilterContainerP
     setFilters(newFilters);
   };
 
-  const filteredRooms = roomsList.filter((room) => room.name?.includes(searchTerm));
 
   return (
     <>

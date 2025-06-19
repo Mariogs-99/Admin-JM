@@ -14,8 +14,8 @@ import UserFormModal from "./UserFormModal";
 
 const UserPage = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);  // Role[]
-  const [loading, setLoading] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
+  const [isLoading, setIsLoading] = useState(false); // 🟢 nombre cambiado para evitar colisión
   const [modalVisible, setModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
@@ -23,19 +23,19 @@ const UserPage = () => {
 
   const loadUsers = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       const data = await GetUsers();
       setUsers(data);
     } catch (error) {
       message.error("Error al cargar usuarios");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   const loadRoles = async () => {
     try {
-      const roles = await GetRoles();  // Devuelve Role[]
+      const roles = await GetRoles();
       setAvailableRoles(roles);
     } catch (error) {
       message.error("Error al cargar roles");
@@ -111,6 +111,7 @@ const UserPage = () => {
           Agregar Usuario
         </Button>
       }
+      loading={isLoading} // Opcional: muestra spinner en el Card
     >
       <UserTable data={users} onEdit={handleEdit} onDelete={handleDelete} />
       <UserFormModal
@@ -119,7 +120,7 @@ const UserPage = () => {
         onSubmit={handleSave}
         initialData={editingUser}
         form={form}
-        availableRoles={availableRoles}  // Pasamos roles al modal
+        availableRoles={availableRoles}
       />
     </Card>
   );

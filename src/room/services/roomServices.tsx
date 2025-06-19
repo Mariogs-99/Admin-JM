@@ -1,6 +1,6 @@
 
 import axios from "axios";
-import { RoomResponse, CategoryRoom } from "../interfaces/roomInterface";
+import { RoomResponse } from "../interfaces/roomInterface";
 import { getToken } from "../../login/services/loginService";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;

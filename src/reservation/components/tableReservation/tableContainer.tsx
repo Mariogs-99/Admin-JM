@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { GetReservations } from "../../services/reservationService";
 import { Reservation } from "../../interfaces/Reservation";
 import { TableUI } from "./tableUI";

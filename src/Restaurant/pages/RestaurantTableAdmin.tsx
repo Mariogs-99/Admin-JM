@@ -7,7 +7,7 @@ import {
   Tag,
   message,
   Popconfirm,
-  Tooltip,
+
 } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Restaurant } from "../interfaces/restaurantInterface";

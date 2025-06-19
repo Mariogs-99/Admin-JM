@@ -52,9 +52,20 @@ export const SaveRestaurant = async (formData: FormData): Promise<void> => {
   }
 };
 
-// ✅ Actualizar restaurante (con imagen y PDF)
-export const UpdateRestaurantWithFiles = async (id: number, formData: FormData, imageFile: File | null, pdfFile: File | null): Promise<void> => {
+export const UpdateRestaurantWithFiles = async (
+  id: number,
+  formData: FormData,
+  imageFile: File | null,
+  pdfFile: File | null
+): Promise<void> => {
   try {
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+    if (pdfFile) {
+      formData.append("pdf", pdfFile);
+    }
+
     await axios.put(`${BASE_URL}/api/restaurant/with-files/${id}`, formData, {
       headers: {
         Authorization: `Bearer ${getToken()}`,
@@ -65,6 +76,7 @@ export const UpdateRestaurantWithFiles = async (id: number, formData: FormData, 
     throw error;
   }
 };
+
 
 // ✅ Eliminar restaurante
 export const DeleteRestaurant = async (id: number): Promise<void> => {

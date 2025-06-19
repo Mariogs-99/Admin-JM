@@ -12,7 +12,6 @@ import Swal from "sweetalert2";
 
 function EventPage() {
   const [events, setEvents] = useState<EventDTO[]>([]);
-  const [filters, setFilters] = useState<any>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventDTO | null>(null);
 

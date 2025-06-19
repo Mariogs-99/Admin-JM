@@ -1,5 +1,5 @@
-import { FC, HTMLProps, useState } from "react"
-import { Title } from "../text/title"
+import { FC, HTMLProps } from "react"
+
 
 interface GenericCardInterface {
     title: string,
@@ -8,7 +8,7 @@ interface GenericCardInterface {
     className?: HTMLProps<HTMLElement>['className']
 }
 
-export const GenericCard: FC<GenericCardInterface> = ({ title, description, img ="", className }) => {
+export const GenericCard: FC<GenericCardInterface> = ({ title, description, img =""}) => {
     return (
         <article className="grid grid-cols-[20%_80%] leading-7 border border-border p-7 rounded-sm">
             <div className="overflow-hidden w-40 h-40 md:w-52 md:h-52 rounded-md">

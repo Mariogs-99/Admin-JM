@@ -1,12 +1,8 @@
 
-import React, { JSX, useEffect, useState } from "react";
-import { FloatLabel } from 'primereact/floatlabel';
+import { JSX, useState } from "react";
+
 import { Dropdown } from 'primereact/dropdown';
 import "./SelectCustomStyle.css"
-
-const handleChange = (value: string[]) => {
-    console.log(`selected ${value}`);
-};
 
 export const FilterSelectUI = ({ data, title, placeholder, onChange }: { data: any; title: JSX.Element; placeholder:string; onChange: (value: any) => void }) => {
     const [value, setValue] = useState(null);

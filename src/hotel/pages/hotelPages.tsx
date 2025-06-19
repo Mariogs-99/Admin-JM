@@ -17,7 +17,7 @@ function HotelPages() {
             <TabPanel header="Galeria">
                 <section className="rounded-md">
                     <Title className="mb-5">Galeria</Title>
-                    <GalleryComponent idCategory="1" /> {/*categoria id = 1 -> hotel */}
+                    <GalleryComponent /> {/*categoria id = 1 -> hotel */}
                 </section>
             </TabPanel>
         </TabView>
