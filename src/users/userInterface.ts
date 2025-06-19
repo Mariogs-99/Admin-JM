@@ -1,3 +1,5 @@
+// userInterface.ts
+
 export interface User {
   userId: number;
   username: string;
@@ -6,6 +8,7 @@ export interface User {
   email: string;
   phone: string;
   active: boolean;
+  role?: string; // agregar rol opcional
 }
 
 export interface UserDTO {
@@ -16,4 +19,10 @@ export interface UserDTO {
   email: string;
   phone: string;
   active: boolean;
+  role?: string; // agregar rol opcional
+}
+
+export interface Role {
+  id: number;
+  name: string;
 }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { User,UserDTO } from "./userInterface";
+import { Role, User,UserDTO } from "./userInterface";
 import { getToken } from "../login/services/loginService";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -20,7 +20,6 @@ export const GetUsers = async (): Promise<User[]> => {
   }
 };
 
-// ✅ Crear usuario
 export const SaveUser = async (data: UserDTO): Promise<void> => {
   try {
     await axios.post(`${BASE_URL}/api/user`, data, {
@@ -35,7 +34,6 @@ export const SaveUser = async (data: UserDTO): Promise<void> => {
   }
 };
 
-// ✅ Actualizar usuario
 export const UpdateUser = async (id: number, data: UserDTO): Promise<void> => {
   try {
     await axios.put(`${BASE_URL}/api/user/${id}`, data, {
@@ -49,6 +47,7 @@ export const UpdateUser = async (id: number, data: UserDTO): Promise<void> => {
     throw error;
   }
 };
+
 
 // ✅ Eliminar usuario
 export const DeleteUser = async (id: number): Promise<void> => {
@@ -73,3 +72,27 @@ export const getAuthenticatedUser = async (): Promise<User> => {
   });
   return response.data;
 };
+
+
+//? Obtener roles
+
+// Obtener lista de roles (solo nombres o id y nombre)
+// Obtener lista de roles (solo nombres o id y nombre)
+export const GetRoles = async (): Promise<Role[]> => {
+  try {
+    const response = await axios.get(`${BASE_URL}/api/roles`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data; // Aquí asumes que la respuesta es Role[]
+  } catch (error) {
+    console.error("Error al obtener roles:", error);
+    throw new Error("Error al obtener roles");
+  }
+};
+
+
+
+

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button, Card, message, Modal, Form } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import { User, UserDTO } from "./userInterface";
+import { User, UserDTO, Role } from "./userInterface";
 import {
   GetUsers,
+  GetRoles,
   SaveUser,
   UpdateUser,
   DeleteUser,
@@ -13,11 +14,12 @@ import UserFormModal from "./UserFormModal";
 
 const UserPage = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);  // Role[]
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const [form] = Form.useForm(); // ✅ Nuevo form externo
+  const [form] = Form.useForm();
 
   const loadUsers = async () => {
     try {
@@ -31,8 +33,18 @@ const UserPage = () => {
     }
   };
 
+  const loadRoles = async () => {
+    try {
+      const roles = await GetRoles();  // Devuelve Role[]
+      setAvailableRoles(roles);
+    } catch (error) {
+      message.error("Error al cargar roles");
+    }
+  };
+
   useEffect(() => {
     loadUsers();
+    loadRoles();
   }, []);
 
   const handleAdd = () => {
@@ -106,7 +118,8 @@ const UserPage = () => {
         onCancel={() => setModalVisible(false)}
         onSubmit={handleSave}
         initialData={editingUser}
-        form={form} // ✅ Pasamos el form al modal
+        form={form}
+        availableRoles={availableRoles}  // Pasamos roles al modal
       />
     </Card>
   );

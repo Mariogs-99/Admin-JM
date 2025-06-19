@@ -8,7 +8,7 @@ import {
   Col,
   FormInstance,
 } from "antd";
-import { User, UserDTO } from "./userInterface";
+import { User, UserDTO, Role } from "./userInterface";
 
 const { Option } = Select;
 
@@ -17,7 +17,8 @@ interface Props {
   onCancel: () => void;
   onSubmit: (data: UserDTO) => void;
   initialData?: User | null;
-  form: FormInstance; // ✅ nuevo
+  form: FormInstance;
+  availableRoles: Role[];  // Role[]
 }
 
 const UserFormModal: FC<Props> = ({
@@ -26,6 +27,7 @@ const UserFormModal: FC<Props> = ({
   onSubmit,
   initialData,
   form,
+  availableRoles,
 }) => {
   useEffect(() => {
     if (visible) {
@@ -33,6 +35,7 @@ const UserFormModal: FC<Props> = ({
         form.setFieldsValue({
           ...initialData,
           password: "", // para no sobreescribir
+          role: initialData.role || undefined,
         });
       } else {
         form.resetFields();
@@ -112,6 +115,21 @@ const UserFormModal: FC<Props> = ({
           <Select placeholder="Seleccione el estado">
             <Option value={true}>Activo</Option>
             <Option value={false}>Inactivo</Option>
+          </Select>
+        </Form.Item>
+
+        {/* Selector de roles */}
+        <Form.Item
+          name="role"
+          label="Rol"
+          rules={[{ required: true, message: "Seleccione un rol" }]}
+        >
+          <Select placeholder="Seleccione un rol" allowClear>
+            {availableRoles.map((role) => (
+              <Option key={role.id} value={role.name}>
+                {role.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
       </Form>

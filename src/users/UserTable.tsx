@@ -47,6 +47,18 @@ const UserTable: FC<Props> = ({ data, onEdit, onDelete }) => {
       ),
     },
     {
+      title: "Rol",
+      dataIndex: "role",  // ahora es un string, no roles[]
+      key: "role",
+      render: (role: string | undefined) => (
+        role
+          ? <Tag color="blue" style={{ marginBottom: 4 }}>{role}</Tag>
+          : <Tag color="red">Sin rol</Tag>
+      ),
+    },
+
+
+    {
       title: "Acciones",
       key: "actions",
       render: (_: any, record: User) => (
