@@ -13,7 +13,7 @@ import {
 } from "react-icons/pi";
 import logo from "../assets/logo.png";
 import { logout } from '../login/services/loginService';
-import { getAuthenticatedUser } from '../users/userService'; // Ajusta si es necesario
+import { getAuthenticatedUser } from '../users/userService';
 
 const { Content, Footer, Sider } = Layout;
 
@@ -24,21 +24,12 @@ interface MenuItem {
   url?: string;
 }
 
-const menuItems: MenuItem[] = [
-  { key: '1', icon: <PiBuildingThin size={20} />, label: 'Hotel', url: 'hotel' },
-  { key: '2', icon: <PiBookBookmarkLight size={20} />, label: 'Reservaciones', url: 'reservaciones' },
-  { key: '3', icon: <PiBedLight size={20} />, label: 'Habitaciones', url: 'habitaciones' },
-  { key: '4', icon: <PiBowlSteamLight size={20} />, label: 'Categorias', url: 'categorias' },
-  { key: '5', icon: <PiCalendarBlankLight size={20} />, label: 'Eventos', url: 'eventos' },
-  { key: '6', icon: <PiChampagneLight size={20} />, label: 'Experiencias', url: 'experiencias' },
-  { key: '7', icon: <PiBowlSteamLight size={20} />, label: 'Restaurante', url: 'restaurante' },
-  { key: '8', icon: <PiUsersThreeLight size={20} />, label: 'Usuarios', url: 'usuarios' },
-];
-
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [authUser, setAuthUser] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const role = (localStorage.getItem("role") || "").toUpperCase();
 
   const handleLogout = async () => {
     try {
@@ -60,6 +51,26 @@ const App: React.FC = () => {
     };
     loadUser();
   }, []);
+
+  const menuItems: MenuItem[] = [
+    { key: '1', icon: <PiBuildingThin size={20} />, label: 'Hotel', url: 'hotel' },
+    { key: '2', icon: <PiBookBookmarkLight size={20} />, label: 'Reservaciones', url: 'reservaciones' },
+    { key: '3', icon: <PiBedLight size={20} />, label: 'Habitaciones', url: 'habitaciones' },
+    { key: '4', icon: <PiBowlSteamLight size={20} />, label: 'Categorias', url: 'categorias' },
+    { key: '5', icon: <PiCalendarBlankLight size={20} />, label: 'Eventos', url: 'eventos' },
+    { key: '6', icon: <PiChampagneLight size={20} />, label: 'Experiencias', url: 'experiencias' },
+    { key: '7', icon: <PiBowlSteamLight size={20} />, label: 'Restaurante', url: 'restaurante' },
+  ];
+
+  // ✅ Agrega la opción "Usuarios" solo si el rol es ADMIN
+  if (role === "ADMIN") {
+    menuItems.push({
+      key: '8',
+      icon: <PiUsersThreeLight size={20} />,
+      label: 'Usuarios',
+      url: 'usuarios',
+    });
+  }
 
   return (
     <ConfigProvider

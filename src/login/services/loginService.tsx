@@ -12,17 +12,23 @@ export const login = async ({ username, password }: LoginRequest): Promise<Login
       `${BASE_URL}/api/auth/login`,
       { username, password }
     );
+
+    // ✅ Guarda token y rol en localStorage
+    localStorage.setItem("token", response.data.token);
+    if (response.data.role) {
+      localStorage.setItem("role", response.data.role.toUpperCase()); // 👈 asegúrate que sea en mayúscula
+    }
+
     return response.data;
   } catch (error: any) {
-    // ✅ Reenvía el error completo al frontend (incluye response.data.message)
     if (error.response) {
       throw error;
     } else {
-      // ⛔️ Error de red o desconocido
       throw new Error("Error de conexión con el servidor");
     }
   }
 };
+
 
 /**
  * Obtiene el token del localStorage
