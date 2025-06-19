@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ConfigProvider, Layout, Menu } from 'antd';
 import { Outlet, useNavigate } from 'react-router-dom';
 import {
-  PiBuildingThin, PiBookBookmarkLight, PiBedLight,
-  PiBowlSteamLight, PiCalendarBlankLight, PiChampagneLight,
-  PiSignOutBold
+  PiBuildingThin,
+  PiBookBookmarkLight,
+  PiBedLight,
+  PiBowlSteamLight,
+  PiCalendarBlankLight,
+  PiChampagneLight,
+  PiSignOutBold,
+  PiUsersThreeLight,
 } from "react-icons/pi";
 import logo from "../assets/logo.png";
-import { logout } from '../login/services/loginService'; // Ajusta ruta si es necesario
+import { logout } from '../login/services/loginService';
+import { getAuthenticatedUser } from '../users/userService'; // Ajusta si es necesario
 
 const { Content, Footer, Sider } = Layout;
 
@@ -15,7 +21,7 @@ interface MenuItem {
   key: string;
   icon: React.ReactNode;
   label: string;
-  url?: string; // url es opcional para el logout
+  url?: string;
 }
 
 const menuItems: MenuItem[] = [
@@ -26,10 +32,12 @@ const menuItems: MenuItem[] = [
   { key: '5', icon: <PiCalendarBlankLight size={20} />, label: 'Eventos', url: 'eventos' },
   { key: '6', icon: <PiChampagneLight size={20} />, label: 'Experiencias', url: 'experiencias' },
   { key: '7', icon: <PiBowlSteamLight size={20} />, label: 'Restaurante', url: 'restaurante' },
+  { key: '8', icon: <PiUsersThreeLight size={20} />, label: 'Usuarios', url: 'usuarios' },
 ];
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [authUser, setAuthUser] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -40,6 +48,18 @@ const App: React.FC = () => {
       console.error("Error al cerrar sesión", error);
     }
   };
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const user = await getAuthenticatedUser();
+        setAuthUser(`${user.firstname} ${user.lastname}`);
+      } catch (error) {
+        console.error("No se pudo obtener el usuario autenticado");
+      }
+    };
+    loadUser();
+  }, []);
 
   return (
     <ConfigProvider
@@ -52,11 +72,20 @@ const App: React.FC = () => {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
-        <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} width={'15vw'} theme="light">
-          <div className="demo-logo-vertical" />
-          <span className='w-full flex justify-center items-center py-5 pb-10'>
-            <img src={logo} alt="logo" className='w-[80%]' />
-          </span>
+        <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} width={'15vw'} theme="dark">
+          <div className="w-full flex flex-col items-center pt-6 pb-4 px-3">
+            <img src={logo} alt="logo" className="w-[80%] mb-3" />
+            {authUser && (
+              <div className="text-center w-full">
+                <p className="text-[#DFDFDF] text-sm font-light leading-tight">
+                  Bienvenido/a
+                </p>
+                <p className="text-white text-sm font-medium truncate">
+                  {authUser}
+                </p>
+              </div>
+            )}
+          </div>
 
           <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
             {menuItems.map(item => (
@@ -68,7 +97,6 @@ const App: React.FC = () => {
                 <p className='text-[#DFDFDF] text-[0.9em] font-title'>{item.label}</p>
               </Menu.Item>
             ))}
-            {/* Botón de logout */}
             <Menu.Item
               key="logout"
               icon={<span className="text-red-400"><PiSignOutBold size={20} /></span>}

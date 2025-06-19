@@ -13,7 +13,8 @@ import { LoginPages } from './login/pages/loginPages.tsx';
 import { ReservationPage } from './reservation/pages/reservationPage.tsx';
 import { Bounce, ToastContainer } from 'react-toastify';
 import { CategoryPage } from './category/pages/categoryPage.tsx';
-import { PrivateRoute } from './layout/PrivateRoute.tsx';// Ajusta la ruta según tu estructura
+import { PrivateRoute } from './layout/PrivateRoute.tsx';
+import UserPage from './users/UserPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -53,6 +54,9 @@ createRoot(document.getElementById('root')!).render(
           <Route path="experiencias" element={<ExperiencesPage />} />
           <Route path="restaurante" element={<RestaurantPage />} />
           <Route path="categorias" element={<CategoryPage />} />
+
+          {/* ✅ Nueva ruta para módulo de usuarios */}
+          <Route path="usuarios" element={<UserPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
