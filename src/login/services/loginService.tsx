@@ -13,8 +13,14 @@ export const login = async ({ username, password }: LoginRequest): Promise<Login
       { username, password }
     );
     return response.data;
-  } catch (error) {
-    throw new Error("Error al iniciar sesión");
+  } catch (error: any) {
+    // ✅ Reenvía el error completo al frontend (incluye response.data.message)
+    if (error.response) {
+      throw error;
+    } else {
+      // ⛔️ Error de red o desconocido
+      throw new Error("Error de conexión con el servidor");
+    }
   }
 };
 
