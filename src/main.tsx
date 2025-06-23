@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Layout from "./layout/layout.tsx";
 import HotelPages from "./hotel/pages/hotelPages.tsx";
 import RoomPage from "./room/pages/roomPage.tsx";
@@ -18,14 +18,22 @@ import UserPage from "./users/UserPage.tsx";
 
 function AppRoutes() {
   const [role, setRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const location = useLocation();
 
   useEffect(() => {
     const savedRole = localStorage.getItem("role");
-    setRole(savedRole);
+    if (savedRole) {
+      setRole(savedRole);
+    }
+    setLoading(false); // Fin del loading
   }, []);
 
-  if (role === null) {
-    // Aquí puedes mostrar un spinner o texto de carga mientras obtienes el rol
+  // 👉 Mostrar login aunque no haya rol
+  const isLoginPage = location.pathname === "/" || location.pathname === "/login";
+
+  if (loading && !isLoginPage) {
     return <div>Cargando...</div>;
   }
 
@@ -44,6 +52,7 @@ function AppRoutes() {
         theme="light"
         transition={Bounce}
       />
+
       <Routes>
         {/* Rutas públicas */}
         <Route path="/" element={<LoginPages />} />
@@ -66,8 +75,6 @@ function AppRoutes() {
           <Route path="experiencias" element={<ExperiencesPage />} />
           <Route path="restaurante" element={<RestaurantPage />} />
           <Route path="categorias" element={<CategoryPage />} />
-
-          {/* Ruta solo visible si rol es ADMIN */}
           {role === "ADMIN" && <Route path="usuarios" element={<UserPage />} />}
         </Route>
       </Routes>
