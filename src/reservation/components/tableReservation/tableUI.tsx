@@ -1,5 +1,6 @@
-import { Table, message, Button } from "antd";
+import { Table, message, Button, Dropdown, Menu, Tooltip } from "antd";
 import { useState } from "react";
+import { MoreOutlined } from "@ant-design/icons";
 import { SortableTitle } from "../sort/title/sortableTitle";
 import { ReservationFormModal } from "../../pages/ReservationFormModal";
 import { deleteReservation } from "../../../reservation/services/reservationService";
@@ -65,13 +66,21 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
     setSortedInfo(sorter);
   };
 
-  const ActionButtons = ({ record }: { record: Reservation }) => (
-    <div className="flex gap-2">
-      <Button type="primary" onClick={() => handleEdit(record)}>Editar</Button>
-      <Button danger onClick={() => handleDeleteClick(record.reservationId)}>Eliminar</Button>
-      <Button onClick={() => handleAssignClick(record)}>Asignar habitación</Button>
-    </div>
-  );
+  const ActionButtons = ({ record }: { record: Reservation }) => {
+    const menu = (
+      <Menu>
+        <Menu.Item onClick={() => handleEdit(record)}>Editar</Menu.Item>
+        <Menu.Item danger onClick={() => handleDeleteClick(record.reservationId)}>Eliminar</Menu.Item>
+        <Menu.Item onClick={() => handleAssignClick(record)}>Asignar habitación</Menu.Item>
+      </Menu>
+    );
+
+    return (
+      <Dropdown overlay={menu} trigger={['click']}>
+        <Button icon={<MoreOutlined />} />
+      </Dropdown>
+    );
+  };
 
   const columns = [
     {
@@ -101,79 +110,64 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       sortOrder: sortedInfo.columnKey === "name" && sortedInfo.order,
     },
     {
-      title: () => <SortableTitle title="Habitación" />,
-      key: "room",
-      render: (_: any, record: Reservation) =>
-        record.rooms && record.rooms.length > 0
-          ? record.rooms.map((r) => `${r.roomName} × ${r.quantity}`).join(", ")
-          : "Sin habitaciones",
-    },
-    {
-      title: () => <SortableTitle title="Número de habitación" />,
-      key: "assignedRoomNumber",
+      title: () => <SortableTitle title="Resumen" />,
+      key: "summary",
       render: (_: any, record: Reservation) => {
-        const numbers = record.rooms
-          ?.map(r => r.assignedRoomNumber)
-          .filter(num => !!num?.trim());
-
-        return numbers?.length ? numbers.join(", ") : "Sin asignar";
+        const habitaciones = record.rooms?.map((r) => `${r.roomName} × ${r.quantity}`).join(", ") || "Sin habitaciones";
+        const asignadas = record.rooms?.map((r) => r.assignedRoomNumber).filter(n => n?.trim()).join(", ") || "Sin asignar";
+        return (
+          <>
+            <div><b>Habitacion:</b> {habitaciones}</div>
+            <div><b>N# Habitacion:</b> {asignadas}</div>
+            <div><b>Personas:</b> {record.cantPeople}</div>
+          </>
+        );
       },
     },
     {
-      title: () => <SortableTitle title="Fecha inicio" sortedColumn={sortedInfo.columnKey === "initDate" ? sortedInfo : undefined} />,
+      title: () => <SortableTitle title="Fecha inicio" />,
       dataIndex: "initDate",
       key: "initDate",
       render: (date: any) => new Date(date).toLocaleDateString("es-ES"),
       sorter: (a: Reservation, b: Reservation) => new Date(a.initDate).getTime() - new Date(b.initDate).getTime(),
     },
     {
-      title: () => <SortableTitle title="Fecha fin" sortedColumn={sortedInfo.columnKey === "finishDate" ? sortedInfo : undefined} />,
+      title: () => <SortableTitle title="Fecha fin" />,
       dataIndex: "finishDate",
       key: "finishDate",
       render: (date: any) => new Date(date).toLocaleDateString("es-ES"),
       sorter: (a: Reservation, b: Reservation) => new Date(a.finishDate).getTime() - new Date(b.finishDate).getTime(),
     },
     {
-      title: () => <SortableTitle title="Habitaciones reservadas" />,
-      key: "roomsCount",
-      render: (_: any, record: Reservation) => {
-        return record.rooms?.reduce((sum, r) => sum + (r.quantity || 0), 0) || 0;
-      },
-      sorter: (a: Reservation, b: Reservation) =>
-        (a.rooms?.reduce((sum, r) => sum + (r.quantity || 0), 0) || 0) -
-        (b.rooms?.reduce((sum, r) => sum + (r.quantity || 0), 0) || 0),
+      title: () => <SortableTitle title="Correo" />,
+      dataIndex: "email",
+      key: "email",
+      render: (email: string) => (
+        <Tooltip title={email}>
+          <span>{email.length > 25 ? email.slice(0, 22) + "..." : email}</span>
+        </Tooltip>
+      ),
     },
     {
-      title: () => <SortableTitle title="Huéspedes" sortedColumn={sortedInfo.columnKey === "cantPeople" ? sortedInfo : undefined} />,
-      dataIndex: "cantPeople",
-      key: "cantPeople",
-      sorter: (a: Reservation, b: Reservation) => a.cantPeople - b.cantPeople,
-    },
-    {
-      title: () => <SortableTitle title="Teléfono" sortedColumn={sortedInfo.columnKey === "phone" ? sortedInfo : undefined} />,
-      dataIndex: "phone",
-      key: "phone",
-    },
-    {
-      title: () => <SortableTitle title="Pago" sortedColumn={sortedInfo.columnKey === "payment" ? sortedInfo : undefined} />,
+      title: () => <SortableTitle title="Pago" />,
       dataIndex: "payment",
       key: "payment",
       render: (payment: number) => `$${payment.toFixed(2)}`,
       sorter: (a: Reservation, b: Reservation) => a.payment - b.payment,
     },
     {
-      title: () => <SortableTitle title="Creación" sortedColumn={sortedInfo.columnKey === "creationDate" ? sortedInfo : undefined} />,
+      title: () => <SortableTitle title="Creación" />,
       dataIndex: "creationDate",
       key: "creationDate",
       render: (value: any) => {
         const date = parseCreationDate(value);
-        return date.toLocaleString("es-ES");
+        return date.toLocaleDateString("es-ES");
       },
       sorter: (a: Reservation, b: Reservation) =>
         parseCreationDate(a.creationDate).getTime() - parseCreationDate(b.creationDate).getTime(),
     },
     {
-      title: () => <SortableTitle title="Estado" sortedColumn={sortedInfo.columnKey === "status" ? sortedInfo : undefined} />,
+      title: () => <SortableTitle title="Estado" />,
       dataIndex: "status",
       key: "status",
       sorter: (a: Reservation, b: Reservation) => a.status.localeCompare(b.status),

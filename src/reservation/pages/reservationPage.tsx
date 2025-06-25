@@ -3,12 +3,16 @@ import { Title } from "../../shared/text/title";
 import { TableContainer } from "../components/tableReservation/tableContainer";
 import { FilterContainer } from "../components/filters/headerFilter/filterContainer";
 import { ReservationFormModal } from "./ReservationFormModal";
+import { useReservationSocketWithCount } from "../../hooks/useReservationSocket";
+import { NotificationBell } from "./NotificationBell";
+import { notification } from "antd";
+import type { ReservationNotificationDTO } from "../../hooks/useReservationSocket";
 
 interface ReservationFilters {
   room?: { name: string };
   startDate?: string;
   endDate?: string;
-  reservationCode?: string; // ✅ nuevo
+  reservationCode?: string;
 }
 
 export const ReservationPage = () => {
@@ -17,7 +21,28 @@ export const ReservationPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<any>(null);
+  const [lastReservation, setLastReservation] = useState<any>(null);
+  const [api, contextHolder] = notification.useNotification();
 
+  //?Notificacion reserva
+
+    const showNotification = (data: ReservationNotificationDTO) => {
+      api.info({
+        message: "Nueva reservación",
+        description: `El cliente ${data.name} ha realizado una reservación (Código: ${data.reservationCode}).`,
+        placement: "topRight",
+        duration: 6,
+      });
+    };
+
+
+
+  // ✅ Hook que escucha WebSocket y actualiza automáticamente
+  const { count, clearCount } = useReservationSocketWithCount((data) => {
+    setLastReservation(data);
+    showNotification(data);
+    setRefresh((prev) => !prev);
+  });
   const handleCreateOrUpdate = () => {
     setModalOpen(false);
     setSelectedReservation(null);
@@ -29,32 +54,45 @@ export const ReservationPage = () => {
     setModalOpen(true);
   };
 
+  const handleNotificationClick = () => {
+    if (lastReservation) {
+      showNotification(lastReservation);
+      clearCount();
+    }
+  };
+
   return (
-    <div className="card">
-      <Title className="pb-10">Reservaciones</Title>
+    <>
+      {contextHolder}
+      <div className="card">
+        <div className="flex justify-between items-center pb-10">
+          <Title>Reservaciones</Title>
+          <NotificationBell count={count} onClick={handleNotificationClick} />
+        </div>
 
-      <FilterContainer
-        results={results}
-        setFilters={setFilters}
-        onAdd={() => setModalOpen(true)}
-      />
+        <FilterContainer
+          results={results}
+          setFilters={setFilters}
+          onAdd={() => setModalOpen(true)}
+        />
 
-      <TableContainer
-        setResults={setResults}
-        filters={filters}
-        refresh={refresh}
-        onEdit={handleEdit}
-      />
+        <TableContainer
+          setResults={setResults}
+          filters={filters}
+          refresh={refresh}
+          onEdit={handleEdit}
+        />
 
-      <ReservationFormModal
-        visible={modalOpen}
-        onCancel={() => {
-          setModalOpen(false);
-          setSelectedReservation(null);
-        }}
-        onSubmit={handleCreateOrUpdate}
-        initialData={selectedReservation}
-      />
-    </div>
+        <ReservationFormModal
+          visible={modalOpen}
+          onCancel={() => {
+            setModalOpen(false);
+            setSelectedReservation(null);
+          }}
+          onSubmit={handleCreateOrUpdate}
+          initialData={selectedReservation}
+        />
+      </div>
+    </>
   );
 };
