@@ -8,8 +8,11 @@ interface Props {
 
 export const NotificationBell = ({ count, onClick }: Props) => {
   return (
-    <Badge count={count} overflowCount={99} size="small">
-      <BellOutlined style={{ fontSize: 24, cursor: "pointer" }} onClick={onClick} />
+    <Badge count={count} overflowCount={99} size="default" offset={[-2, 2]}>
+      <BellOutlined
+        style={{ fontSize: 30, cursor: "pointer", color: "#555" }}
+        onClick={onClick}
+      />
     </Badge>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ConfigProvider, Layout, Menu } from 'antd';
+import { ConfigProvider, Layout, Menu, Badge } from 'antd';
 import { Outlet, useNavigate } from 'react-router-dom';
 import {
   PiBuildingThin,
@@ -11,11 +11,15 @@ import {
   PiSignOutBold,
   PiUsersThreeLight,
 } from "react-icons/pi";
+import { BellOutlined } from '@ant-design/icons';
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+import Swal from "sweetalert2";
 import logo from "../assets/logo.png";
 import { logout } from '../login/services/loginService';
 import { getAuthenticatedUser } from '../users/userService';
 
-const { Content, Footer, Sider } = Layout;
+const { Content, Footer, Sider, Header } = Layout;
 
 interface MenuItem {
   key: string;
@@ -27,6 +31,8 @@ interface MenuItem {
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [authUser, setAuthUser] = useState<string | null>(null);
+  const [notificationCount, setNotificationCount] = useState<number>(0);
+  const [lastNotification, setLastNotification] = useState<any>(null);
   const navigate = useNavigate();
 
   const role = (localStorage.getItem("role") || "").toUpperCase();
@@ -52,6 +58,43 @@ const App: React.FC = () => {
     loadUser();
   }, []);
 
+  // 🧩 WebSocket para notificaciones globales
+  useEffect(() => {
+    const socket = new SockJS(import.meta.env.VITE_WS_URL || "http://localhost:8080/ws-reservations");
+
+    const client = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      onConnect: () => {
+        client.subscribe("/topic/reservations", (message) => {
+          const data = JSON.parse(message.body);
+          setNotificationCount((prev) => prev + 1);
+          setLastNotification(data);
+
+          Swal.fire({
+            title: "Nueva reservación",
+            html: `Nombre: <b>${data.name}</b><br/>Código: <b>${data.reservationCode}</b><br/>Habitación: <b>${data.roomSummary}</b>`,
+            icon: "info",
+            toast: true,
+            position: "top-end",
+            timer: 10000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+          });
+        });
+      },
+      onStompError: (frame) => {
+        console.error("Error STOMP", frame);
+      },
+    });
+
+    client.activate();
+
+    return () => {
+      client.deactivate();
+    };
+  }, []);
+
   const menuItems: MenuItem[] = [
     { key: '1', icon: <PiBuildingThin size={20} />, label: 'Hotel', url: 'hotel' },
     { key: '2', icon: <PiBookBookmarkLight size={20} />, label: 'Reservaciones', url: 'reservaciones' },
@@ -62,7 +105,6 @@ const App: React.FC = () => {
     { key: '7', icon: <PiBowlSteamLight size={20} />, label: 'Restaurante', url: 'restaurante' },
   ];
 
-  // ✅ Agrega la opción "Usuarios" solo si el rol es ADMIN
   if (role === "ADMIN") {
     menuItems.push({
       key: '8',
@@ -119,6 +161,32 @@ const App: React.FC = () => {
         </Sider>
 
         <Layout>
+         <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: 64 }}>
+                <Badge count={notificationCount} overflowCount={99} size="default" offset={[-2, 2]}>
+                  <BellOutlined
+                    style={{
+                      fontSize: 30,
+                      cursor: "pointer",
+                      color: "#555",
+                      transition: "transform 0.2s",
+                    }}
+                    onClick={() => {
+                      if (lastNotification) {
+                        Swal.fire({
+                          title: "Última reservación",
+                          html: `Nombre: <b>${lastNotification.name}</b><br/>Código: <b>${lastNotification.reservationCode}</b><br/>Habitación: <b>${lastNotification.roomSummary}</b>`,
+                          icon: "info",
+                          confirmButtonText: "Cerrar"
+                        });
+                        setNotificationCount(0);
+                      }
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                  />
+                </Badge>
+              </Header>
+
           <Content style={{ padding: '3% 5%' }}>
             <div className='font-title'>
               <Outlet />

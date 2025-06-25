@@ -143,11 +143,23 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       dataIndex: "email",
       key: "email",
       render: (email: string) => (
-        <Tooltip title={email}>
-          <span>{email.length > 25 ? email.slice(0, 22) + "..." : email}</span>
-        </Tooltip>
+        <div className="flex items-center gap-2">
+          <Tooltip title={email}>
+            <span>{email.length > 25 ? email.slice(0, 22) + "..." : email}</span>
+          </Tooltip>
+          <Button
+            size="small"
+            onClick={() => {
+              navigator.clipboard.writeText(email);
+              message.success("Correo copiado");
+            }}
+          >
+            Copiar
+          </Button>
+        </div>
       ),
     },
+
     {
       title: () => <SortableTitle title="Pago" />,
       dataIndex: "payment",
