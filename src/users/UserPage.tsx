@@ -11,13 +11,18 @@ import {
 } from "./userService";
 import UserTable from "./UserTable";
 import UserFormModal from "./UserFormModal";
+import Title from "antd/es/typography/Title";
 
 const UserPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
-  const [isLoading, setIsLoading] = useState(false); // 🟢 nombre cambiado para evitar colisión
+  const [isLoading, setIsLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  // 🔴 Nuevo estado para confirmación de eliminación
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const [form] = Form.useForm();
 
@@ -57,23 +62,25 @@ const UserPage = () => {
     setModalVisible(true);
   };
 
+  // ✅ Mostrar modal personalizado al hacer clic en eliminar
   const handleDelete = (user: User) => {
-    Modal.confirm({
-      title: "¿Eliminar usuario?",
-      content: `¿Seguro que deseas eliminar a ${user.firstname} ${user.lastname}?`,
-      okText: "Sí",
-      cancelText: "No",
-      okType: "danger",
-      onOk: async () => {
-        try {
-          await DeleteUser(user.userId);
-          message.success("Usuario eliminado correctamente");
-          loadUsers();
-        } catch {
-          message.error("Error al eliminar usuario");
-        }
-      },
-    });
+    setUserToDelete(user);
+    setConfirmVisible(true);
+  };
+
+  // ✅ Confirmar eliminación
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
+    try {
+      await DeleteUser(userToDelete.userId);
+      message.success("Usuario eliminado correctamente");
+      loadUsers();
+    } catch {
+      message.error("Error al eliminar usuario");
+    } finally {
+      setConfirmVisible(false);
+      setUserToDelete(null);
+    }
   };
 
   const handleSave = async (data: UserDTO) => {
@@ -104,25 +111,47 @@ const UserPage = () => {
   };
 
   return (
-    <Card
-      title="Gestión de Usuarios"
-      extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          Agregar Usuario
-        </Button>
-      }
-      loading={isLoading} // Opcional: muestra spinner en el Card
-    >
-      <UserTable data={users} onEdit={handleEdit} onDelete={handleDelete} />
-      <UserFormModal
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        onSubmit={handleSave}
-        initialData={editingUser}
-        form={form}
-        availableRoles={availableRoles}
-      />
-    </Card>
+    <>
+
+        <Title>Usuarios</Title>
+      <Card
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+            Agregar Usuario
+          </Button>
+        }
+        loading={isLoading}
+      >
+        <UserTable data={users} onEdit={handleEdit} onDelete={handleDelete} />
+        <UserFormModal
+          visible={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          onSubmit={handleSave}
+          initialData={editingUser}
+          form={form}
+          availableRoles={availableRoles}
+        />
+      </Card>
+
+      {/* ✅ Modal personalizado de confirmación */}
+ <Modal
+  open={confirmVisible}
+  title="¿Eliminar usuario?"
+  onOk={confirmDelete}
+  onCancel={() => setConfirmVisible(false)}
+  okText="Sí"
+  cancelText="No"
+  okType="danger"
+  centered // 👈 Esto lo centra mejor verticalmente
+  destroyOnClose
+>
+  <p>
+    ¿Estás seguro que deseas eliminar al usuario{" "}
+    <strong>{userToDelete?.firstname} {userToDelete?.lastname}</strong>?
+  </p>
+</Modal>
+
+    </>
   );
 };
 
