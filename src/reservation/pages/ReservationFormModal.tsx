@@ -122,15 +122,18 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   const details: string[] = [];
 
   for (const r of values.rooms) {
-    const room = availableRooms.find((ar) => ar.roomId === r.roomId); // 👈 directo
+  if (!r || r.roomId === undefined) continue; // ⛑ Evita error aquí
 
-    const quantity = Number(r.quantity) || 0;
-    if (room && quantity > 0) {
-      const totalRoom = room.price * quantity * nights;
-      subtotal += totalRoom;
-      details.push(`${room.nameEs} × ${quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
-    }
+  const room = availableRooms.find((ar) => ar.roomId === r.roomId);
+  const quantity = Number(r.quantity) || 0;
+
+  if (room && quantity > 0) {
+    const totalRoom = room.price * quantity * nights;
+    subtotal += totalRoom;
+    details.push(`${room.nameEs} × ${quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
   }
+}
+
 
   const iva = subtotal * 0.13;
   const total = subtotal + iva;
@@ -254,7 +257,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
-        <Form.Item label="Cantidad de personas" name="cantPeople" rules={[{ required: true }]}> 
+        <Form.Item label="Cantidad de huespedes" name="cantPeople" rules={[{ required: true }]}> 
           <InputNumber size="large" min={1} style={{ width: "100%" }} />
         </Form.Item>
 
@@ -292,16 +295,19 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
                         onChange={() => setTimeout(() => calculateSummary(), 50)} // 🧠 forzamos cálculo
                       >
 
-                        {availableRooms.map((room) => (
-                          <Option
-                            key={room.roomId}
-                            value={room.roomId}
-                            label={`${room.nameEs} – $${room.price}`}
-                            disabled={room.availableQuantity <= 0}
-                          >
-                            {`${room.nameEs} – $${room.price} (${room.availableQuantity} disponibles)`}
-                          </Option>
+                      {availableRooms
+                          .filter((room) => room.maxCapacity >= (form.getFieldValue("cantPeople") || 1))
+                          .map((room) => (
+                            <Option
+                              key={room.roomId}
+                              value={room.roomId}
+                              label={`${room.nameEs} – $${room.price}`}
+                              disabled={room.availableQuantity <= 0}
+                            >
+                              {`${room.nameEs} – $${room.price} (${room.availableQuantity} disponibles)`}
+                            </Option>
                         ))}
+
                       </Select>
                     </Form.Item>
                   </Col>
