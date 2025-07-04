@@ -76,7 +76,7 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
     );
 
     return (
-      <Dropdown overlay={menu} trigger={['click']}>
+      <Dropdown overlay={menu} trigger={["click"]}>
         <Button icon={<MoreOutlined />} />
       </Dropdown>
     );
@@ -87,39 +87,65 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       title: () => <SortableTitle title="Código de reserva" />,
       dataIndex: "reservationCode",
       key: "reservationCode",
-      render: (code: string) => (
-        <div className="flex items-center gap-2">
-          <span style={{ fontFamily: "monospace", fontSize: "0.9rem" }}>{code}</span>
-          <Button
-            size="small"
-            onClick={() => {
-              navigator.clipboard.writeText(code);
-              message.success("Código copiado");
-            }}
-          >
-            Copiar
-          </Button>
-        </div>
-      ),
+      render: (code: string | null) => {
+        const safeCode = code || "-";
+        return (
+          <div className="flex items-center gap-2">
+            <span style={{ fontFamily: "monospace", fontSize: "0.9rem" }}>{safeCode}</span>
+            <Button
+              size="small"
+              disabled={safeCode === "-"}
+              onClick={() => {
+                navigator.clipboard.writeText(safeCode);
+                message.success("Código copiado");
+              }}
+            >
+              Copiar
+            </Button>
+          </div>
+        );
+      },
     },
     {
-      title: () => <SortableTitle title="Huésped" sortedColumn={sortedInfo.columnKey === "name" ? sortedInfo : undefined} />,
+      title: () => (
+        <SortableTitle
+          title="Huésped"
+          sortedColumn={sortedInfo.columnKey === "name" ? sortedInfo : undefined}
+        />
+      ),
       dataIndex: "name",
       key: "name",
-      sorter: (a: Reservation, b: Reservation) => a.name.localeCompare(b.name),
+      sorter: (a: Reservation, b: Reservation) =>
+        (a.name || "").localeCompare(b.name || ""),
       sortOrder: sortedInfo.columnKey === "name" && sortedInfo.order,
+      render: (name: string | null) => name || "-",
     },
     {
       title: () => <SortableTitle title="Resumen" />,
       key: "summary",
       render: (_: any, record: Reservation) => {
-        const habitaciones = record.rooms?.map((r) => `${r.roomName} × ${r.quantity}`).join(", ") || "Sin habitaciones";
-        const asignadas = record.rooms?.map((r) => r.assignedRoomNumber).filter(n => n?.trim()).join(", ") || "Sin asignar";
+        let habitaciones = "Sin habitaciones";
+        let asignadas = "Sin asignar";
+
+        if (record.rooms && record.rooms.length > 0) {
+          habitaciones = record.rooms
+            .map((r) => `${r.roomName} × ${r.quantity}`)
+            .join(", ");
+          asignadas =
+            record.rooms
+              .map((r) => r.assignedRoomNumber)
+              .filter((n) => n?.trim())
+              .join(", ") || "Sin asignar";
+        } else if (record.room) {
+          habitaciones = record.room.nameEs || "Sin habitaciones";
+          asignadas = record.roomNumber || "Sin asignar";
+        }
+
         return (
           <>
             <div><b>Habitacion:</b> {habitaciones}</div>
             <div><b>N# Habitacion:</b> {asignadas}</div>
-            <div><b>Personas:</b> {record.cantPeople}</div>
+            <div><b>Personas:</b> {record.cantPeople ?? "-"}</div>
           </>
         );
       },
@@ -128,44 +154,53 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
       title: () => <SortableTitle title="Fecha inicio" />,
       dataIndex: "initDate",
       key: "initDate",
-      render: (date: any) => new Date(date).toLocaleDateString("es-ES"),
-      sorter: (a: Reservation, b: Reservation) => new Date(a.initDate).getTime() - new Date(b.initDate).getTime(),
+      render: (date: any) =>
+        date ? new Date(date).toLocaleDateString("es-ES") : "-",
+      sorter: (a: Reservation, b: Reservation) =>
+        new Date(a.initDate || 0).getTime() - new Date(b.initDate || 0).getTime(),
     },
     {
       title: () => <SortableTitle title="Fecha fin" />,
       dataIndex: "finishDate",
       key: "finishDate",
-      render: (date: any) => new Date(date).toLocaleDateString("es-ES"),
-      sorter: (a: Reservation, b: Reservation) => new Date(a.finishDate).getTime() - new Date(b.finishDate).getTime(),
+      render: (date: any) =>
+        date ? new Date(date).toLocaleDateString("es-ES") : "-",
+      sorter: (a: Reservation, b: Reservation) =>
+        new Date(a.finishDate || 0).getTime() - new Date(b.finishDate || 0).getTime(),
     },
     {
       title: () => <SortableTitle title="Correo" />,
       dataIndex: "email",
       key: "email",
-      render: (email: string) => (
-        <div className="flex items-center gap-2">
-          <Tooltip title={email}>
-            <span>{email.length > 25 ? email.slice(0, 22) + "..." : email}</span>
-          </Tooltip>
-          <Button
-            size="small"
-            onClick={() => {
-              navigator.clipboard.writeText(email);
-              message.success("Correo copiado");
-            }}
-          >
-            Copiar
-          </Button>
-        </div>
-      ),
+      render: (email: string | null) => {
+        const safeEmail = email || "-";
+        return (
+          <div className="flex items-center gap-2">
+            <Tooltip title={safeEmail}>
+              <span>{safeEmail.length > 25 ? safeEmail.slice(0, 22) + "..." : safeEmail}</span>
+            </Tooltip>
+            <Button
+              size="small"
+              disabled={safeEmail === "-"}
+              onClick={() => {
+                navigator.clipboard.writeText(safeEmail);
+                message.success("Correo copiado");
+              }}
+            >
+              Copiar
+            </Button>
+          </div>
+        );
+      },
     },
-
     {
       title: () => <SortableTitle title="Pago" />,
       dataIndex: "payment",
       key: "payment",
-      render: (payment: number) => `$${payment.toFixed(2)}`,
-      sorter: (a: Reservation, b: Reservation) => a.payment - b.payment,
+      render: (payment: number | null) =>
+        payment != null ? `$${payment.toFixed(2)}` : "-",
+      sorter: (a: Reservation, b: Reservation) =>
+        (a.payment || 0) - (b.payment || 0),
     },
     {
       title: () => <SortableTitle title="Creación" />,
@@ -176,23 +211,27 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
         return date.toLocaleDateString("es-ES");
       },
       sorter: (a: Reservation, b: Reservation) =>
-        parseCreationDate(a.creationDate).getTime() - parseCreationDate(b.creationDate).getTime(),
+        parseCreationDate(a.creationDate).getTime() -
+        parseCreationDate(b.creationDate).getTime(),
     },
     {
       title: () => <SortableTitle title="Estado" />,
       dataIndex: "status",
       key: "status",
-      sorter: (a: Reservation, b: Reservation) => a.status.localeCompare(b.status),
-      render: (status: string) => {
+      sorter: (a: Reservation, b: Reservation) =>
+        (a.status || "").localeCompare(b.status || ""),
+      render: (status: string | null) => {
+        const safeStatus = status || "-";
         let color = "gray";
-        let label = status;
-        if (status === "FINALIZADA") {
+        let label = safeStatus;
+
+        if (safeStatus === "FINALIZADA") {
           color = "green";
           label = "Finalizada";
-        } else if (status === "ACTIVA") {
+        } else if (safeStatus === "ACTIVA") {
           color = "blue";
           label = "Activa";
-        } else if (status === "FUTURA") {
+        } else if (safeStatus === "FUTURA") {
           color = "orange";
           label = "Futura";
         }
