@@ -11,3 +11,17 @@ export interface OtaIcalConfigCreateDTO {
   icalUrl: string;
   active: boolean;
 }
+
+export interface ImportResultDTO {
+  importedReservations: {
+    uid: string;
+    roomName: string;
+    dates: string;
+  }[];
+  rejectedReservations: {
+    uid: string;
+    roomName: string;
+    reason: string;
+  }[];
+}
+

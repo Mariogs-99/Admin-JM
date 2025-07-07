@@ -18,7 +18,11 @@ import {
   deleteOtaConfig,
   importOtaReservations,
 } from "./otaIntegrationService";
-import { OtaIcalConfig, OtaIcalConfigCreateDTO } from "./otaInterface";
+import {
+  OtaIcalConfig,
+  OtaIcalConfigCreateDTO,
+  ImportResultDTO,
+} from "./otaInterface";
 
 const OTAS = ["Airbnb", "Booking", "Expedia"];
 
@@ -89,7 +93,10 @@ export const OtaIntegrationsPage: React.FC = () => {
       }
     } catch (error) {
       console.error(error);
-      showResultModal("Error", "Ocurrió un error al guardar la integración OTA.");
+      showResultModal(
+        "Error",
+        "Ocurrió un error al guardar la integración OTA."
+      );
     }
 
     setIsModalVisible(false);
@@ -97,25 +104,53 @@ export const OtaIntegrationsPage: React.FC = () => {
   };
 
   const handleImport = async (ota: OtaIcalConfig) => {
-    if (!ota.icalUrl) {
-      showResultModal("Error", "Esta OTA no tiene URL configurada.");
-      return;
+  if (!ota.icalUrl) {
+    showResultModal("Error", "Esta OTA no tiene URL configurada.");
+    return;
+  }
+
+  try {
+    const result: ImportResultDTO = await importOtaReservations(ota.icalUrl, ota.otaName);
+
+    let html = "";
+
+    if (result.importedReservations.length > 0) {
+      html += `<h3 style="color: green; margin-bottom: 10px;">Importadas:</h3>`;
+      html += "<ul style='padding-left: 20px;'>";
+      result.importedReservations.forEach((res) => {
+        html += `<li><strong>${res.roomName}</strong> — ${res.dates} (UID: ${res.uid})</li>`;
+      });
+      html += "</ul>";
     }
-    try {
-      const result = await importOtaReservations(ota.icalUrl, ota.otaName);
-      showResultModal(
-        "Importación completada",
-        result?.data?.message ||
-          `Las reservas de <strong>${ota.otaName}</strong> se actualizaron correctamente.`
-      );
-    } catch (error) {
-      console.error(error);
-      showResultModal(
-        "Error durante la importación",
-        `Ocurrió un error al importar reservas de <strong>${ota.otaName}</strong>.`
-      );
+
+    if (result.rejectedReservations.length > 0) {
+      html += `<h3 style="color: red; margin-top: 20px; margin-bottom: 10px;">❌ Rechazadas:</h3>`;
+      html += "<ul style='padding-left: 20px;'>";
+      result.rejectedReservations.forEach((rej) => {
+        html += `<li><strong>${rej.roomName}</strong> — ${rej.reason} (UID: ${rej.uid})</li>`;
+      });
+      html += "</ul>";
     }
-  };
+
+    if (html === "") {
+      html = `No se importaron reservas para <strong>${ota.otaName}</strong>.`;
+    }
+
+    showResultModal(`Importación de ${ota.otaName}`, html);
+
+  } catch (error: any) {
+    console.error(error);
+
+    let errorMsg = `Ocurrió un error técnico al importar reservas de <strong>${ota.otaName}</strong>.`;
+
+    if (error?.response?.data?.message) {
+      errorMsg += `<br/><br/>Detalle: ${error.response.data.message}`;
+    }
+
+    showResultModal("Error durante la importación", errorMsg);
+  }
+};
+
 
   const showResultModal = (title: string, content: string) => {
     setResultModalTitle(title);
@@ -243,7 +278,10 @@ export const OtaIntegrationsPage: React.FC = () => {
               loadConfigs();
             } catch (error) {
               console.error(error);
-              showResultModal("Error", "Error al eliminar la integración OTA.");
+              showResultModal(
+                "Error",
+                "Error al eliminar la integración OTA."
+              );
             }
           }
         }}
@@ -260,13 +298,27 @@ export const OtaIntegrationsPage: React.FC = () => {
 
       <Modal
         open={isResultModalVisible}
-        title={<span style={{ fontSize: "22px", fontWeight: "bold" }}>{resultModalTitle}</span>}
+        title={
+          <span
+            style={{
+              fontSize: "22px",
+              fontWeight: "bold",
+            }}
+          >
+            {resultModalTitle}
+          </span>
+        }
         onOk={() => setIsResultModalVisible(false)}
         centered
-        width={650}
+        width={850}
         cancelButtonProps={{ style: { display: "none" } }}
       >
-        <div style={{ fontSize: "18px", lineHeight: "1.6" }} dangerouslySetInnerHTML={{ __html: resultModalContent }}></div>
+        <div
+          style={{ fontSize: "18px", lineHeight: "1.6" }}
+          dangerouslySetInnerHTML={{
+            __html: resultModalContent,
+          }}
+        ></div>
       </Modal>
     </>
   );

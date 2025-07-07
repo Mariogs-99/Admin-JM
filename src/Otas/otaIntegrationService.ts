@@ -1,5 +1,5 @@
 
-import { OtaIcalConfig, OtaIcalConfigCreateDTO } from "./otaInterface";
+import { ImportResultDTO, OtaIcalConfig, OtaIcalConfigCreateDTO } from "./otaInterface";
 import { getToken } from "../login/services/loginService";
 import axios, { AxiosResponse } from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -71,9 +71,9 @@ export const deleteOtaConfig = async (id: number): Promise<void> => {
 export const importOtaReservations = async (
   url: string,
   otaName: string
-): Promise<AxiosResponse<string>> => {
+): Promise<ImportResultDTO> => {
   try {
-    const response = await axios.post(
+    const response = await axios.post<ImportResultDTO>(
       `${BASE_URL}/api/ical/import`,
       null,
       {
@@ -84,7 +84,7 @@ export const importOtaReservations = async (
         },
       }
     );
-    return response;
+    return response.data;
   } catch (error) {
     console.error("Error al importar reservas OTA:", error);
     throw error;
