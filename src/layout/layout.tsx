@@ -112,6 +112,13 @@ const App: React.FC = () => {
       label: 'Usuarios',
       url: 'usuarios',
     });
+
+    menuItems.push({
+      key: '9',
+      icon: <PiCalendarBlankLight size={20} />,
+      label: 'Integraciones OTA',
+      url: 'ota-integraciones',
+    });
   }
 
   return (
@@ -161,31 +168,31 @@ const App: React.FC = () => {
         </Sider>
 
         <Layout>
-         <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: 64 }}>
-                <Badge count={notificationCount} overflowCount={99} size="default" offset={[-2, 2]}>
-                  <BellOutlined
-                    style={{
-                      fontSize: 30,
-                      cursor: "pointer",
-                      color: "#555",
-                      transition: "transform 0.2s",
-                    }}
-                    onClick={() => {
-                      if (lastNotification) {
-                        Swal.fire({
-                          title: "Última reservación",
-                          html: `Nombre: <b>${lastNotification.name}</b><br/>Código: <b>${lastNotification.reservationCode}</b><br/>Habitación: <b>${lastNotification.roomSummary}</b>`,
-                          icon: "info",
-                          confirmButtonText: "Cerrar"
-                        });
-                        setNotificationCount(0);
-                      }
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  />
-                </Badge>
-              </Header>
+          <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: 64 }}>
+            <Badge count={notificationCount} overflowCount={99} size="default" offset={[-2, 2]}>
+              <BellOutlined
+                style={{
+                  fontSize: 30,
+                  cursor: "pointer",
+                  color: "#555",
+                  transition: "transform 0.2s",
+                }}
+                onClick={() => {
+                  if (lastNotification) {
+                    Swal.fire({
+                      title: "Última reservación",
+                      html: `Nombre: <b>${lastNotification.name}</b><br/>Código: <b>${lastNotification.reservationCode}</b><br/>Habitación: <b>${lastNotification.roomSummary}</b>`,
+                      icon: "info",
+                      confirmButtonText: "Cerrar"
+                    });
+                    setNotificationCount(0);
+                  }
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+              />
+            </Badge>
+          </Header>
 
           <Content style={{ padding: '3% 5%' }}>
             <div className='font-title'>
