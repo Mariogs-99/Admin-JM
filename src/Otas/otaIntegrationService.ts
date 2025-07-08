@@ -1,7 +1,7 @@
 
 import { ImportResultDTO, OtaIcalConfig, OtaIcalConfigCreateDTO } from "./otaInterface";
 import { getToken } from "../login/services/loginService";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // ✅ Obtener todas las integraciones OTA activas

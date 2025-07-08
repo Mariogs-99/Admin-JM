@@ -7,10 +7,15 @@ import {
   Card,
   Tag,
   Select,
+  Tooltip,
+  Empty,
 } from "antd";
 import {
   EyeInvisibleOutlined,
   PlusOutlined,
+  EditOutlined,
+  DownloadOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import {
   getOtaConfigs,
@@ -24,7 +29,20 @@ import {
   ImportResultDTO,
 } from "./otaInterface";
 
+//?Importa las imágenes desde assets
+import airbnbLogo from "../assets/airbnb.png";
+import bookingLogo from "../assets/booking.png";
+import expediaLogo from "../assets/expedia.png";
+import defaultLogo from "../assets/default.png";
+
 const OTAS = ["Airbnb", "Booking", "Expedia"];
+
+//?Diccionario nombre → imagen
+const OTA_IMAGES: Record<string, string> = {
+  Airbnb: airbnbLogo,
+  Booking: bookingLogo,
+  Expedia: expediaLogo,
+};
 
 export const OtaIntegrationsPage: React.FC = () => {
   const [configs, setConfigs] = useState<OtaIcalConfig[]>([]);
@@ -104,53 +122,54 @@ export const OtaIntegrationsPage: React.FC = () => {
   };
 
   const handleImport = async (ota: OtaIcalConfig) => {
-  if (!ota.icalUrl) {
-    showResultModal("Error", "Esta OTA no tiene URL configurada.");
-    return;
-  }
-
-  try {
-    const result: ImportResultDTO = await importOtaReservations(ota.icalUrl, ota.otaName);
-
-    let html = "";
-
-    if (result.importedReservations.length > 0) {
-      html += `<h3 style="color: green; margin-bottom: 10px;">Importadas:</h3>`;
-      html += "<ul style='padding-left: 20px;'>";
-      result.importedReservations.forEach((res) => {
-        html += `<li><strong>${res.roomName}</strong> — ${res.dates} (UID: ${res.uid})</li>`;
-      });
-      html += "</ul>";
+    if (!ota.icalUrl) {
+      showResultModal("Error", "Esta OTA no tiene URL configurada.");
+      return;
     }
 
-    if (result.rejectedReservations.length > 0) {
-      html += `<h3 style="color: red; margin-top: 20px; margin-bottom: 10px;">❌ Rechazadas:</h3>`;
-      html += "<ul style='padding-left: 20px;'>";
-      result.rejectedReservations.forEach((rej) => {
-        html += `<li><strong>${rej.roomName}</strong> — ${rej.reason} (UID: ${rej.uid})</li>`;
-      });
-      html += "</ul>";
+    try {
+      const result: ImportResultDTO = await importOtaReservations(
+        ota.icalUrl,
+        ota.otaName
+      );
+
+      let html = "";
+
+      if (result.importedReservations.length > 0) {
+        html += `<h3 style="color: green; margin-bottom: 10px;">Importadas:</h3>`;
+        html += "<ul style='padding-left: 20px;'>";
+        result.importedReservations.forEach((res) => {
+          html += `<li><strong>${res.roomName}</strong> — ${res.dates} (UID: ${res.uid})</li>`;
+        });
+        html += "</ul>";
+      }
+
+      if (result.rejectedReservations.length > 0) {
+        html += `<h3 style="color: red; margin-top: 20px; margin-bottom: 10px;">❌ Rechazadas:</h3>`;
+        html += "<ul style='padding-left: 20px;'>";
+        result.rejectedReservations.forEach((rej) => {
+          html += `<li><strong>${rej.roomName}</strong> — ${rej.reason} (UID: ${rej.uid})</li>`;
+        });
+        html += "</ul>";
+      }
+
+      if (html === "") {
+        html = `No se importaron reservas para <strong>${ota.otaName}</strong>.`;
+      }
+
+      showResultModal(`Importación de ${ota.otaName}`, html);
+    } catch (error: any) {
+      console.error(error);
+
+      let errorMsg = `Ocurrió un error técnico al importar reservas de <strong>${ota.otaName}</strong>.`;
+
+      if (error?.response?.data?.message) {
+        errorMsg += `<br/><br/>Detalle: ${error.response.data.message}`;
+      }
+
+      showResultModal("Error durante la importación", errorMsg);
     }
-
-    if (html === "") {
-      html = `No se importaron reservas para <strong>${ota.otaName}</strong>.`;
-    }
-
-    showResultModal(`Importación de ${ota.otaName}`, html);
-
-  } catch (error: any) {
-    console.error(error);
-
-    let errorMsg = `Ocurrió un error técnico al importar reservas de <strong>${ota.otaName}</strong>.`;
-
-    if (error?.response?.data?.message) {
-      errorMsg += `<br/><br/>Detalle: ${error.response.data.message}`;
-    }
-
-    showResultModal("Error durante la importación", errorMsg);
-  }
-};
-
+  };
 
   const showResultModal = (title: string, content: string) => {
     setResultModalTitle(title);
@@ -161,65 +180,165 @@ export const OtaIntegrationsPage: React.FC = () => {
   return (
     <>
       <h2 className="text-2xl mb-4 font-bold">Integraciones OTA</h2>
+      
+      
 
       <Button
         type="primary"
         icon={<PlusOutlined />}
-        style={{ marginBottom: 16 }}
+        style={{
+          marginBottom: 24,
+          backgroundColor: "#005b96",
+          borderColor: "#005b96",
+        }}
         onClick={showCreateModal}
       >
         Agregar Integración OTA
       </Button>
 
-      {configs.map((c) => (
-        <Card key={c.id} style={{ marginBottom: 16 }}>
-          <h3 className="text-lg font-semibold">{c.otaName}</h3>
-          <p>
-            Estado:{" "}
-            {c.active ? (
-              <Tag color="green">Configurada</Tag>
-            ) : (
-              <Tag color="red">No configurada</Tag>
-            )}
-          </p>
-          <p>
-            URL actual:{" "}
-            {c.icalUrl ? (
-              <>
-                <span className="text-green-600">Configurada</span>{" "}
-                <EyeInvisibleOutlined
-                  style={{ color: "#888" }}
-                  title="URL oculta por seguridad"
-                />
-              </>
-            ) : (
-              <span className="text-gray-500">No configurada</span>
-            )}
-          </p>
+    <p
+  style={{
+    marginTop: 32,
+    paddingBottom: 32,
+    fontSize: 14,
+    color: "#666",
+    maxWidth: 700,
+    lineHeight: 1.6,
+  }}
+>
+  Administra y conecta tus plataformas de reservas desde un solo lugar. Configura las URLs iCal para importar las reservas y mantener actualizado tu PMS.
+</p>
+
+
+
+      {configs.length === 0 && (
+        <Empty
+          description="No hay integraciones configuradas."
+          style={{ marginTop: 50 }}
+        >
           <Button
             type="primary"
-            style={{ marginRight: 8 }}
-            onClick={() => showEditModal(c)}
-          >
-            {c.active ? "Cambiar URL" : "Configurar URL"}
-          </Button>
-          <Button
-            type="default"
-            style={{ marginRight: 8 }}
-            onClick={() => handleImport(c)}
-            disabled={!c.icalUrl}
-          >
-            Actualizar reservas
-          </Button>
-          <Button
-            danger
-            onClick={() => {
-              setOtaToDelete(c);
-              setIsDeleteModalVisible(true);
+            icon={<PlusOutlined />}
+            onClick={showCreateModal}
+            style={{
+              backgroundColor: "#005b96",
+              borderColor: "#005b96",
             }}
           >
-            Eliminar
+            Agregar Integración OTA
           </Button>
+        </Empty>
+      )}
+
+      {configs.map((c) => (
+        <Card
+          key={c.id}
+          style={{
+            marginBottom: 16,
+            borderRadius: 8,
+            border: "1px solid #f0f0f0",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          }}
+          bodyStyle={{ padding: 24 }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              gap: 16,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 16,
+                flex: 1,
+                minWidth: 250,
+              }}
+            >
+              <img
+                src={OTA_IMAGES[c.otaName] || defaultLogo}
+                alt={c.otaName}
+                style={{
+                  width: 48,
+                  height: 48,
+                  objectFit: "contain",
+                  borderRadius: 8,
+                }}
+              />
+              <div>
+                <h3 style={{ fontSize: 18, marginBottom: 8 }}>
+                  {c.otaName}
+                </h3>
+                <p style={{ marginBottom: 4, fontSize: 14, color: "#555" }}>
+                  Estado:{" "}
+                  {c.active ? (
+                    <Tag color="green">Configurada</Tag>
+                  ) : (
+                    <Tag color="red">No configurada</Tag>
+                  )}
+                </p>
+                <p style={{ marginBottom: 0, fontSize: 14, color: "#555" }}>
+                  URL:{" "}
+                  {c.icalUrl ? (
+                    <>
+                      <span style={{ color: "#52c41a" }}>
+                        Configurada
+                      </span>{" "}
+                      <EyeInvisibleOutlined
+                        title="URL oculta por seguridad"
+                        style={{ color: "#999" }}
+                      />
+                    </>
+                  ) : (
+                    <span style={{ color: "#999" }}>
+                      No configurada
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <Button
+                type="primary"
+                ghost
+                icon={<EditOutlined />}
+                onClick={() => showEditModal(c)}
+              >
+                {c.active ? "Cambiar URL" : "Configurar URL"}
+              </Button>
+              <Tooltip
+                title={
+                  !c.icalUrl
+                    ? "Configura la URL para poder importar reservas"
+                    : ""
+                }
+              >
+                <Button
+                  type="default"
+                  icon={<DownloadOutlined />}
+                  disabled={!c.icalUrl}
+                  onClick={() => handleImport(c)}
+                >
+                  Actualizar
+                </Button>
+              </Tooltip>
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => {
+                  setOtaToDelete(c);
+                  setIsDeleteModalVisible(true);
+                }}
+              >
+                Eliminar
+              </Button>
+            </div>
+          </div>
         </Card>
       ))}
 
@@ -233,6 +352,9 @@ export const OtaIntegrationsPage: React.FC = () => {
             ? "Agregar Integración OTA"
             : `Configurar ${currentOta?.otaName || ""}`
         }
+        bodyStyle={{
+          padding: 24,
+        }}
       >
         <Form form={form} layout="vertical">
           {isCreateMode && (
@@ -255,7 +377,10 @@ export const OtaIntegrationsPage: React.FC = () => {
             label="URL iCal"
             name="icalUrl"
             rules={[
-              { required: true, message: "Por favor ingresa la URL iCal" },
+              {
+                required: true,
+                message: "Por favor ingresa la URL iCal",
+              },
             ]}
           >
             <Input placeholder="https://..." />
@@ -299,12 +424,7 @@ export const OtaIntegrationsPage: React.FC = () => {
       <Modal
         open={isResultModalVisible}
         title={
-          <span
-            style={{
-              fontSize: "22px",
-              fontWeight: "bold",
-            }}
-          >
+          <span style={{ fontSize: "22px", fontWeight: "bold" }}>
             {resultModalTitle}
           </span>
         }
@@ -312,9 +432,14 @@ export const OtaIntegrationsPage: React.FC = () => {
         centered
         width={850}
         cancelButtonProps={{ style: { display: "none" } }}
+        bodyStyle={{
+          backgroundColor: "#fafafa",
+          padding: "24px",
+          borderRadius: "8px",
+        }}
       >
         <div
-          style={{ fontSize: "18px", lineHeight: "1.6" }}
+          style={{ fontSize: "16px", lineHeight: "1.6" }}
           dangerouslySetInnerHTML={{
             __html: resultModalContent,
           }}

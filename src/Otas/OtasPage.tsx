@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import OtaTable from "./OtaTable";
 import { OtaIcalConfig } from "./otaInterface";
-import { Button, Modal, Form, Input } from "antd";
+import { Modal, Form, Input } from "antd";
 import { getOtaConfigs, saveOtaConfig } from "./otaIntegrationService";
+import { SaveOutlined } from "@ant-design/icons";
 
 export const OtaIntegrationsPage: React.FC = () => {
   const [otas, setOtas] = useState<OtaIcalConfig[]>([]);
@@ -40,20 +41,35 @@ export const OtaIntegrationsPage: React.FC = () => {
 
   return (
     <>
-      <h2 className="text-xl font-bold mb-4">Integraciones OTA</h2>
+      <h2 className="text-2xl font-bold mb-4">Integraciones OTA</h2>
+      
       <OtaTable data={otas} onEdit={handleEdit} />
 
+    
       <Modal
         open={isModalVisible}
         onOk={handleOk}
         onCancel={() => setIsModalVisible(false)}
         okText="Guardar"
+        okButtonProps={{
+          style: {
+            backgroundColor: "#005b96",
+            borderColor: "#005b96",
+            borderRadius: 6,
+            height: 40,
+            fontWeight: "bold",
+          },
+          icon: <SaveOutlined />,
+        }}
+        bodyStyle={{ padding: 24 }}
       >
         <Form form={form} layout="vertical">
           <Form.Item
             label="URL iCal"
             name="icalUrl"
-            rules={[{ required: true, message: "Por favor ingresa la URL iCal" }]}
+            rules={[
+              { required: true, message: "Por favor ingresa la URL iCal" },
+            ]}
           >
             <Input placeholder="https://..." />
           </Form.Item>
