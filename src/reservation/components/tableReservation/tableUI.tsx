@@ -1,5 +1,5 @@
-import { Table, message, Button, Dropdown, Menu, Tooltip } from "antd";
-import { useState } from "react";
+import { Table, message, Button, Dropdown, Menu, Tooltip, Modal } from "antd";
+import { useState, useEffect } from "react";
 import { MoreOutlined } from "@ant-design/icons";
 import { SortableTitle } from "../sort/title/sortableTitle";
 import { ReservationFormModal } from "../../pages/ReservationFormModal";
@@ -7,6 +7,7 @@ import { deleteReservation } from "../../../reservation/services/reservationServ
 import { DeleteConfirmationModal } from "../../pages/DeleteConfirmationModal";
 import { Reservation } from "../../../reservation/interfaces/Reservation";
 import { AssignRoomModal } from "../../pages/AssignRoomModal";
+import { getDtePdfBlob } from "../../interfaces/dteService";
 
 const parseCreationDate = (value: any): Date => {
   if (Array.isArray(value) && value.length >= 3) {
@@ -20,7 +21,7 @@ const parseCreationDate = (value: any): Date => {
 interface TableUIProps {
   data: Reservation[];
   onReservationUpdated?: () => void;
-  onEdit: (reservation: Reservation) => void;
+  onEdit?: (reservation: Reservation) => void;
 }
 
 export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
@@ -31,6 +32,35 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
   const [reservationToDelete, setReservationToDelete] = useState<number | null>(null);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [reservationToAssign, setReservationToAssign] = useState<Reservation | null>(null);
+
+  const [dteModalVisible, setDteModalVisible] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
+  // ✅ Cargar PDF cuando se abre el modal
+  useEffect(() => {
+    const fetchPdf = async () => {
+      if (selectedReservation?.reservationId) {
+        try {
+          const blob = await getDtePdfBlob(selectedReservation.reservationId);
+          const url = URL.createObjectURL(blob);
+          setPdfUrl(url);
+        } catch (error) {
+          console.error(error);
+          message.error("Error al obtener el PDF del DTE.");
+        }
+      }
+    };
+
+    if (dteModalVisible) {
+      fetchPdf();
+    } else {
+      // Liberar URL blob al cerrar modal
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+        setPdfUrl(null);
+      }
+    }
+  }, [dteModalVisible, selectedReservation]);
 
   const handleEdit = (reservation: Reservation) => {
     setSelectedReservation(reservation);
@@ -45,6 +75,15 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
   const handleAssignClick = (reservation: Reservation) => {
     setReservationToAssign(reservation);
     setAssignModalOpen(true);
+  };
+
+  const handleViewDte = (reservation: Reservation) => {
+    if (!reservation.reservationId) {
+      message.warning("La reserva no tiene ID válido para visualizar su DTE.");
+      return;
+    }
+    setSelectedReservation(reservation);
+    setDteModalVisible(true);
   };
 
   const confirmDelete = async () => {
@@ -72,6 +111,7 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
         <Menu.Item onClick={() => handleEdit(record)}>Editar</Menu.Item>
         <Menu.Item danger onClick={() => handleDeleteClick(record.reservationId)}>Eliminar</Menu.Item>
         <Menu.Item onClick={() => handleAssignClick(record)}>Asignar habitación</Menu.Item>
+        <Menu.Item onClick={() => handleViewDte(record)}>Ver DTE</Menu.Item>
       </Menu>
     );
 
@@ -143,8 +183,8 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
 
         return (
           <>
-            <div><b>Habitacion:</b> {habitaciones}</div>
-            <div><b>N# Habitacion:</b> {asignadas}</div>
+            <div><b>Habitación:</b> {habitaciones}</div>
+            <div><b>N° Habitación:</b> {asignadas}</div>
             <div><b>Personas:</b> {record.cantPeople ?? "-"}</div>
           </>
         );
@@ -281,6 +321,29 @@ export const TableUI = ({ data, onReservationUpdated }: TableUIProps) => {
           }}
         />
       )}
+
+      <Modal
+        visible={dteModalVisible}
+        title={`Visualización del DTE PDF`}
+        footer={null}
+        onCancel={() => setDteModalVisible(false)}
+        width={1000}
+        style={{ top: 20 }}
+      >
+        {pdfUrl ? (
+          <iframe
+            src={pdfUrl}
+            style={{
+              width: "100%",
+              height: "80vh",
+              border: "none",
+            }}
+            title="DTE PDF"
+          />
+        ) : (
+          <p>Cargando PDF...</p>
+        )}
+      </Modal>
     </>
   );
 };
