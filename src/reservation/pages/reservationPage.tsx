@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Switch, message} from "antd";
+import { InfoCircleOutlined } from "@ant-design/icons";
 import { Title } from "../../shared/text/title";
 import { TableContainer } from "../components/tableReservation/tableContainer";
 import { FilterContainer } from "../components/filters/headerFilter/filterContainer";
 import { ReservationFormModal } from "./ReservationFormModal";
+import { getCompany, updateDteEnabled } from "../../Company/companyService";
 
 interface ReservationFilters {
   room?: { name: string };
@@ -17,6 +20,30 @@ export const ReservationPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<any>(null);
+  const [dteEnabled, setDteEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchCompany = async () => {
+      try {
+        const company = await getCompany();
+        setDteEnabled(company.dteEnabled);
+      } catch (error) {
+        message.error("Error al cargar estado DTE");
+      }
+    };
+    fetchCompany();
+  }, []);
+
+  const toggleDte = async (checked: boolean) => {
+    try {
+      setDteEnabled(checked);
+      await updateDteEnabled(checked);
+      message.success(`DTE ${checked ? "activado" : "desactivado"}`);
+    } catch (error) {
+      setDteEnabled(!checked);
+      message.error("No se pudo actualizar el estado del DTE");
+    }
+  };
 
   const handleCreateOrUpdate = () => {
     setModalOpen(false);
@@ -31,8 +58,30 @@ export const ReservationPage = () => {
 
   return (
     <div className="card">
-      <div className="flex justify-between items-center pb-10">
+      <div className="flex justify-between items-start pb-6 flex-col md:flex-row md:items-center gap-4">
         <Title>Reservaciones</Title>
+
+        <div className="bg-gray-100 px-4 py-3 rounded-xl shadow-sm flex items-center justify-between gap-6 w-full md:w-auto">
+          <div className="flex items-start gap-2 max-w-xs">
+            <InfoCircleOutlined className="text-blue-500 text-lg mt-1" />
+            <div>
+              <div className="font-medium text-sm text-gray-800">
+                Emisión de DTE
+              </div>
+              <p className="text-xs text-gray-500">
+                Habilita o deshabilita la emisión automática de facturas electrónicas (DTE)
+                al confirmar una reserva.
+              </p>
+            </div>
+          </div>
+          <Switch
+            className="scale-125"
+            checked={dteEnabled}
+            onChange={toggleDte}
+            checkedChildren="Activado"
+            unCheckedChildren="Desactivado"
+          />
+        </div>
       </div>
 
       <FilterContainer
