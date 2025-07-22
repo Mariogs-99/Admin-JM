@@ -110,7 +110,7 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 
 
 
-  const calculateSummary = () => {
+ const calculateSummary = () => {
   const values = form.getFieldsValue();
   if (!values.rooms || !values.initDate || !values.finishDate) return;
 
@@ -122,27 +122,26 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   const details: string[] = [];
 
   for (const r of values.rooms) {
-  if (!r || r.roomId === undefined) continue; // ⛑ Evita error aquí
+    if (!r || r.roomId === undefined) continue;
 
-  const room = availableRooms.find((ar) => ar.roomId === r.roomId);
-  const quantity = Number(r.quantity) || 0;
+    const room = availableRooms.find((ar) => ar.roomId === r.roomId);
+    const quantity = Number(r.quantity) || 0;
 
-  if (room && quantity > 0) {
-    const totalRoom = room.price * quantity * nights;
-    subtotal += totalRoom;
-    details.push(`${room.nameEs} × ${quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
+    if (room && quantity > 0) {
+      const totalRoom = room.price * quantity * nights;
+      subtotal += totalRoom;
+      details.push(`${room.nameEs} × ${quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
+    }
   }
-}
-
 
   const iva = subtotal * 0.13;
-  const total = subtotal + iva;
+  const hotelTax = subtotal * 0.05;
+  const total = subtotal + iva + hotelTax;
 
   setSummary({ subtotal, iva, total, details, nights });
   form.setFieldsValue({ payment: parseFloat(total.toFixed(2)) });
-
-  
 };
+
 
 
   const handleValuesChange = () => {
@@ -338,44 +337,49 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
 
         <Divider />
 
-      <div
-  style={{
-    backgroundColor: "#f0f2f5",
-    padding: "20px",
-    borderRadius: "12px",
-    marginBottom: 32,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-  }}
->
-  <Title level={4} style={{ marginBottom: 12 }}>Resumen de la reserva</Title>
+     <div
+            style={{
+              backgroundColor: "#f0f2f5",
+              padding: "20px",
+              borderRadius: "12px",
+              marginBottom: 32,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            }}
+          >
+            <Title level={4} style={{ marginBottom: 12 }}>Resumen de la reserva</Title>
 
-  {summary.details.length > 0 ? (
-    <div style={{ marginBottom: 16 }}>
-      {summary.details.map((item, index) => (
-        <div key={index} style={{ marginBottom: 4, fontSize: "15px" }}>
-          • {item}
-        </div>
-      ))}
-    </div>
-  ) : (
-    <Text type="secondary">No hay habitaciones seleccionadas aún.</Text>
-  )}
+            {summary.details.length > 0 ? (
+              <div style={{ marginBottom: 16 }}>
+                {summary.details.map((item, index) => (
+                  <div key={index} style={{ marginBottom: 4, fontSize: "15px" }}>
+                    • {item}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Text type="secondary">No hay habitaciones seleccionadas aún.</Text>
+            )}
 
-  <Divider style={{ margin: "12px 0" }} />
+            <Divider style={{ margin: "12px 0" }} />
 
-  <div style={{ fontSize: "16px", marginBottom: 4 }}>
-    <Text>Subtotal:</Text>
-    <Text style={{ float: "right" }} strong>${summary.subtotal.toFixed(2)}</Text>
-  </div>
-  <div style={{ fontSize: "16px", marginBottom: 4 }}>
-    <Text>IVA (13%):</Text>
-    <Text style={{ float: "right" }} strong>${summary.iva.toFixed(2)}</Text>
-  </div>
-  <div style={{ fontSize: "17px", marginTop: 8 }}>
-    <Text strong>Total:</Text>
-    <Text style={{ float: "right" }} strong>${summary.total.toFixed(2)}</Text>
-  </div>
-</div>
+            <div style={{ fontSize: "16px", marginBottom: 4 }}>
+              <Text>Subtotal:</Text>
+              <Text style={{ float: "right" }} strong>${summary.subtotal.toFixed(2)}</Text>
+            </div>
+            <div style={{ fontSize: "16px", marginBottom: 4 }}>
+              <Text>IVA (13%):</Text>
+              <Text style={{ float: "right" }} strong>${summary.iva.toFixed(2)}</Text>
+            </div>
+            <div style={{ fontSize: "16px", marginBottom: 4 }}>
+              <Text>Impuesto hotelero (5%):</Text>
+              <Text style={{ float: "right" }} strong>${(summary.subtotal * 0.05).toFixed(2)}</Text>
+            </div>
+            <div style={{ fontSize: "17px", marginTop: 8 }}>
+              <Text strong>Total:</Text>
+              <Text style={{ float: "right" }} strong>${summary.total.toFixed(2)}</Text>
+            </div>
+          </div>
+
 
 
         <Row justify="center">
