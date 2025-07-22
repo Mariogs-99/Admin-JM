@@ -52,7 +52,15 @@ if (role === "ADMIN") {
         label: 'Integraciones OTA',
         url: 'ota-integraciones'
     });
+
+    items.push({
+        key: '8',
+        icon: <LuHotel size={12} />,
+        label: 'Configuración',
+        url: 'configuracion'
+    });
 }
+
 
 export const Menu = () => {
     const navigate = useNavigate();

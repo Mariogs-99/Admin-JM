@@ -16,6 +16,8 @@ import { CategoryPage } from "./category/pages/categoryPage.tsx";
 import { PrivateRoute } from "./layout/PrivateRoute.tsx";
 import UserPage from "./users/UserPage.tsx";
 import { OtaIntegrationsPage } from "./Otas/OtaIntegrationsPage.tsx";
+import { CompanyPage } from "./Company/pages/CompanyPage.tsx";
+
 
 function AppRoutes() {
   const [role, setRole] = useState<string | null>(null);
@@ -78,6 +80,8 @@ function AppRoutes() {
           <Route path="categorias" element={<CategoryPage />} />
           {role === "ADMIN" && <Route path="usuarios" element={<UserPage />} />}
           {role === "ADMIN" && <Route path="ota-integraciones" element={<OtaIntegrationsPage />} />}
+          {role === "ADMIN" && <Route path="configuracion" element={<CompanyPage />} />}
+
         </Route>
       </Routes>
     </>

@@ -119,6 +119,14 @@ const App: React.FC = () => {
       label: 'Integraciones OTA',
       url: 'ota-integraciones',
     });
+
+    menuItems.push({
+      key: '10',
+      icon: <PiBuildingThin size={20} />,
+      label: 'Configuración',
+      url: 'configuracion',
+    });
+
   }
 
   return (
