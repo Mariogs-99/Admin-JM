@@ -29,6 +29,7 @@ interface ReservationFormModalProps {
   onCancel: () => void;
   onSubmit: () => void;
   initialData?: any;
+  setLoading?: (loading: boolean) => void;
 }
 
 export const ReservationFormModal: FC<ReservationFormModalProps> = ({
@@ -36,12 +37,12 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
   onCancel,
   onSubmit,
   initialData,
+  setLoading, // ✅ se usará en lugar del modal interno
 }) => {
   const [form] = Form.useForm();
   const watchedRooms = useWatch("rooms", form);
   const watchedInit = useWatch("initDate", form);
   const watchedFinish = useWatch("finishDate", form);
-
   const [availableRooms, setAvailableRooms] = useState<any[]>([]);
   const [summary, setSummary] = useState({
     subtotal: 0,
@@ -61,88 +62,83 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
     }
   };
 
- useEffect(() => {
-  const loadData = async () => {
-    if (visible && initialData) {
-      const checkIn = dayjs(initialData.initDate).format("YYYY-MM-DD");
-      const checkOut = dayjs(initialData.finishDate).format("YYYY-MM-DD");
+  useEffect(() => {
+    const loadData = async () => {
+      if (visible && initialData) {
+        const checkIn = dayjs(initialData.initDate).format("YYYY-MM-DD");
+        const checkOut = dayjs(initialData.finishDate).format("YYYY-MM-DD");
 
-      const data = await fetchRooms(checkIn, checkOut, initialData.cantPeople);
+        const data = await fetchRooms(checkIn, checkOut, initialData.cantPeople);
 
-      for (const r of initialData.rooms || []) {
-        if (!data.find((ar) => ar.roomId === r.roomId)) {
-          data.push({
-            roomId: r.roomId,
-            nameEs: r.roomName || "Habitación no disponible",
-            price: r.price ?? 0,
-            maxCapacity: r.maxCapacity ?? 1,
-            availableQuantity: r.quantity ?? 0,
-          });
+        for (const r of initialData.rooms || []) {
+          if (!data.find((ar) => ar.roomId === r.roomId)) {
+            data.push({
+              roomId: r.roomId,
+              nameEs: r.roomName || "Habitación no disponible",
+              price: r.price ?? 0,
+              maxCapacity: r.maxCapacity ?? 1,
+              availableQuantity: r.quantity ?? 0,
+            });
+          }
         }
+
+        setAvailableRooms(data);
+
+        const formattedRooms = initialData.rooms?.map((r: any) => ({
+          roomId: r.roomId,
+          quantity: r.quantity,
+        }));
+
+        form.setFieldsValue({
+          ...initialData,
+          initDate: dayjs(initialData.initDate),
+          finishDate: dayjs(initialData.finishDate),
+          rooms: formattedRooms,
+          status: initialData.status || "FUTURA",
+        });
       }
 
-      setAvailableRooms(data);
+      if (!visible) {
+        form.resetFields();
+        setAvailableRooms([]);
+        setSummary({ subtotal: 0, iva: 0, total: 0, details: [], nights: 0 });
+      }
+    };
 
-      const formattedRooms = initialData.rooms?.map((r: any) => ({
-        roomId: r.roomId,      // ✅ valor simple
-        quantity: r.quantity,
-      }));
+    loadData();
+  }, [visible, initialData]);
 
-      form.setFieldsValue({
-        ...initialData,
-        initDate: dayjs(initialData.initDate),
-        finishDate: dayjs(initialData.finishDate),
-        rooms: formattedRooms,
-        status: initialData.status || "FUTURA",
-      });
+  const calculateSummary = () => {
+    const values = form.getFieldsValue();
+    if (!values.rooms || !values.initDate || !values.finishDate) return;
 
+    const checkIn = new Date(values.initDate);
+    const checkOut = new Date(values.finishDate);
+    const nights = Math.max(0, (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+
+    let subtotal = 0;
+    const details: string[] = [];
+
+    for (const r of values.rooms) {
+      if (!r || r.roomId === undefined) continue;
+
+      const room = availableRooms.find((ar) => ar.roomId === r.roomId);
+      const quantity = Number(r.quantity) || 0;
+
+      if (room && quantity > 0) {
+        const totalRoom = room.price * quantity * nights;
+        subtotal += totalRoom;
+        details.push(`${room.nameEs} × ${quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
+      }
     }
 
-    if (!visible) {
-      form.resetFields();
-      setAvailableRooms([]);
-      setSummary({ subtotal: 0, iva: 0, total: 0, details: [], nights: 0 });
-    }
+    const iva = subtotal * 0.13;
+    const hotelTax = subtotal * 0.05;
+    const total = subtotal + iva + hotelTax;
+
+    setSummary({ subtotal, iva, total, details, nights });
+    form.setFieldsValue({ payment: parseFloat(total.toFixed(2)) });
   };
-
-  loadData();
-}, [visible, initialData]);
-
-
-
- const calculateSummary = () => {
-  const values = form.getFieldsValue();
-  if (!values.rooms || !values.initDate || !values.finishDate) return;
-
-  const checkIn = new Date(values.initDate);
-  const checkOut = new Date(values.finishDate);
-  const nights = Math.max(0, (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-
-  let subtotal = 0;
-  const details: string[] = [];
-
-  for (const r of values.rooms) {
-    if (!r || r.roomId === undefined) continue;
-
-    const room = availableRooms.find((ar) => ar.roomId === r.roomId);
-    const quantity = Number(r.quantity) || 0;
-
-    if (room && quantity > 0) {
-      const totalRoom = room.price * quantity * nights;
-      subtotal += totalRoom;
-      details.push(`${room.nameEs} × ${quantity} × ${nights} noche(s) = $${totalRoom.toFixed(2)}`);
-    }
-  }
-
-  const iva = subtotal * 0.13;
-  const hotelTax = subtotal * 0.05;
-  const total = subtotal + iva + hotelTax;
-
-  setSummary({ subtotal, iva, total, details, nights });
-  form.setFieldsValue({ payment: parseFloat(total.toFixed(2)) });
-};
-
-
 
   const handleValuesChange = () => {
     const { initDate, finishDate, cantPeople } = form.getFieldsValue();
@@ -182,6 +178,8 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
       })),
     };
 
+    setLoading?.(true); // ✅ Mostrar loading externo
+
     try {
       if (initialData?.reservationId) {
         await UpdateReservation(initialData.reservationId, payload);
@@ -200,26 +198,28 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
       });
 
       form.resetFields();
+      setLoading?.(false);
       onSubmit();
     } catch {
       message.error("Error al guardar la reserva");
+      setLoading?.(false);
     }
   };
 
   useEffect(() => {
-  if (
-    watchedRooms &&
-    watchedRooms.length > 0 &&
-    watchedInit &&
-    watchedFinish &&
-    availableRooms.length > 0
-  ) {
-    calculateSummary();
-  }
-}, [watchedRooms, watchedInit, watchedFinish, availableRooms]);
-
+    if (
+      watchedRooms &&
+      watchedRooms.length > 0 &&
+      watchedInit &&
+      watchedFinish &&
+      availableRooms.length > 0
+    ) {
+      calculateSummary();
+    }
+  }, [watchedRooms, watchedInit, watchedFinish, availableRooms]);
 
   return (
+   
     <Modal
       open={visible}
       title={<Title level={4}>{initialData ? "Editar reserva" : "Nueva reserva"}</Title>}
@@ -390,6 +390,8 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
           </Col>
         </Row>
       </Form>
+
     </Modal>
+
   );
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, message} from "antd";
+import { Switch, message, Modal } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { Title } from "../../shared/text/title";
 import { TableContainer } from "../components/tableReservation/tableContainer";
@@ -21,6 +21,7 @@ export const ReservationPage = () => {
   const [refresh, setRefresh] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<any>(null);
   const [dteEnabled, setDteEnabled] = useState<boolean>(false);
+  const [showSavingModal, setShowSavingModal] = useState<boolean>(false); // ✅ modal de carga
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -49,6 +50,9 @@ export const ReservationPage = () => {
     setModalOpen(false);
     setSelectedReservation(null);
     setRefresh((prev) => !prev);
+
+    // ✅ Cerramos el modal de guardando después de cerrar el principal
+    setTimeout(() => setShowSavingModal(false), 300);
   };
 
   const handleEdit = (reservation: any) => {
@@ -105,7 +109,23 @@ export const ReservationPage = () => {
         }}
         onSubmit={handleCreateOrUpdate}
         initialData={selectedReservation}
+        setLoading={setShowSavingModal} // ✅ nuevo prop
       />
+
+      {/* ✅ Modal externo de carga */}
+      <Modal
+        open={showSavingModal}
+        footer={null}
+        closable={false}
+        centered
+        maskClosable={false}
+        width={300}
+      >
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <div className="ant-spin ant-spin-lg" />
+          <p style={{ marginTop: "15px" }}>Guardando reserva...</p>
+        </div>
+      </Modal>
     </div>
   );
 };
