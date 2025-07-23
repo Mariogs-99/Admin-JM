@@ -215,7 +215,7 @@ export const CompanyPage = () => {
             <Col xs={24}>
               <Divider />
               <Form.Item
-                label="Emisión de DTE habilitada"
+                label="Emisión de DTE"
                 name="dteEnabled"
                 valuePropName="checked"
               >

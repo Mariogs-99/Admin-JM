@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { Switch, message, Modal, Spin } from "antd";
+import { useState} from "react";
+import { Modal, Spin } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { Title } from "../../shared/text/title";
 import { TableContainer } from "../components/tableReservation/tableContainer";
 import { FilterContainer } from "../components/filters/headerFilter/filterContainer";
 import { ReservationFormModal } from "./ReservationFormModal";
-import { getCompany, updateDteEnabled } from "../../Company/companyService";
+
 
 interface ReservationFilters {
   room?: { name: string };
@@ -20,31 +20,8 @@ export const ReservationPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<any>(null);
-  const [dteEnabled, setDteEnabled] = useState<boolean>(false);
-  const [saving, setSaving] = useState(false); // ✅ Loading state para modal
+  const [saving, setSaving] = useState(false); 
 
-  useEffect(() => {
-    const fetchCompany = async () => {
-      try {
-        const company = await getCompany();
-        setDteEnabled(company.dteEnabled);
-      } catch (error) {
-        message.error("Error al cargar estado DTE");
-      }
-    };
-    fetchCompany();
-  }, []);
-
-  const toggleDte = async (checked: boolean) => {
-    try {
-      setDteEnabled(checked);
-      await updateDteEnabled(checked);
-      message.success(`DTE ${checked ? "activado" : "desactivado"}`);
-    } catch (error) {
-      setDteEnabled(!checked);
-      message.error("No se pudo actualizar el estado del DTE");
-    }
-  };
 
   const handleCreateOrUpdate = () => {
     setModalOpen(false);
@@ -70,18 +47,11 @@ export const ReservationPage = () => {
                 Emisión de DTE
               </div>
               <p className="text-xs text-gray-500">
-                Habilita o deshabilita la emisión automática de facturas electrónicas (DTE)
-                al confirmar una reserva.
+                Puedes habilitar la opción de emision de DTE en Configuraciones del hotel
               </p>
             </div>
           </div>
-          <Switch
-            className="scale-125"
-            checked={dteEnabled}
-            onChange={toggleDte}
-            checkedChildren="Activado"
-            unCheckedChildren="Desactivado"
-          />
+          
         </div>
       </div>
 
