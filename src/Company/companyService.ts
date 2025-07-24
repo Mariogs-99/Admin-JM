@@ -64,3 +64,23 @@ export const updateCompany = async (companyData: any) => {
     throw new Error("No se pudo actualizar la información de la empresa");
   }
 };
+
+//?Subir certificado digital al backend
+export const uploadCertificate = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file); 
+
+    const response = await axios.post(`${BASE_URL}/api/company/upload-cert`, formData, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error al subir el certificado:", error);
+    throw new Error("No se pudo subir el certificado");
+  }
+};

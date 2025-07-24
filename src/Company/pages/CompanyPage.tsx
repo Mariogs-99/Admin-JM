@@ -11,8 +11,9 @@ import {
   Col,
   Divider,
   Select,
+  Upload,
 } from "antd";
-import { getCompany, updateCompany } from "../../Company/companyService";
+import { getCompany, updateCompany,uploadCertificate } from "../../Company/companyService";
 import { departamentos, municipios } from "./locationOptions";
 
 const { Title } = Typography;
@@ -24,13 +25,11 @@ interface MunicipioOption {
   departamento: string;
 }
 
-// ... (imports sin cambios)
-
 export const CompanyPage = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [municipiosFiltrados, setMunicipiosFiltrados] = useState<MunicipioOption[]>([]);
-
+  const [certFile, setCertFile] = useState<File | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalContent, setModalContent] = useState("");
@@ -61,21 +60,31 @@ export const CompanyPage = () => {
     form.setFieldsValue({ municipio: undefined });
   };
 
-  const handleFinish = async (values: any) => {
-    try {
-      setLoading(true);
-      await updateCompany(values);
-      setModalTitle("Éxito");
-      setModalContent("La información del hotel fue actualizada correctamente.");
-      setModalVisible(true);
-    } catch (error) {
-      setModalTitle("Error");
-      setModalContent("No se pudieron guardar los cambios del hotel.");
-      setModalVisible(true);
-    } finally {
-      setLoading(false);
+const handleFinish = async (values: any) => {
+  try {
+    setLoading(true);
+    await updateCompany(values);
+
+    if (certFile) {
+      await uploadCertificate(certFile);
     }
-  };
+
+    setModalTitle("Éxito");
+    setModalContent(
+      certFile
+        ? "La información y el certificado fueron actualizados correctamente."
+        : "La información del hotel fue actualizada correctamente."
+    );
+    setModalVisible(true);
+  } catch (error) {
+    setModalTitle("Error");
+    setModalContent("No se pudieron guardar los cambios del hotel.");
+    setModalVisible(true);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem" }}>
@@ -297,6 +306,24 @@ export const CompanyPage = () => {
               <Input.Password size="large" placeholder="Contraseña del certificado" />
             </Form.Item>
           </Col>
+
+          <Col xs={24}>
+            <Form.Item label="Certificado Digital (.crt o .pfx)">
+              <Upload
+                beforeUpload={(file) => {
+                  setCertFile(file);
+                  return false; // ⚠️ evitar que lo suba automáticamente
+                }}
+                fileList={certFile ? [certFile as any] : []}
+                accept=".crt,.pfx"
+                maxCount={1}
+              >
+                <Button type="dashed">Seleccionar Certificado (.crt o .pfx)</Button>
+              </Upload>
+            </Form.Item>
+          </Col>
+
+
 
 
             
