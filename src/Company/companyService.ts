@@ -1,9 +1,8 @@
-
 import axios from "axios";
 import { getToken } from "../login/services/loginService";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-//?Obtener datos de la empresa
+//? Obtener datos de la empresa (sin contraseñas)
 export const getCompany = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/api/company`, {
@@ -19,7 +18,7 @@ export const getCompany = async () => {
   }
 };
 
-//?Actualizar el estado del DTE (activar/desactivar)
+//? Actualizar el estado del DTE (activar/desactivar)
 export const updateDteEnabled = async (enabled: boolean) => {
   try {
     const response = await axios.put(
@@ -39,19 +38,26 @@ export const updateDteEnabled = async (enabled: boolean) => {
   }
 };
 
-//?Actualizar datos generales de la empresa
+//? Actualizar datos generales de la empresa (sin enviar contraseñas vacías)
 export const updateCompany = async (companyData: any) => {
   try {
-    const response = await axios.put(
-      `${BASE_URL}/api/company`,
-      companyData,
-      {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const payload = { ...companyData };
+
+    // ⚠️ Eliminar contraseñas si están vacías o no fueron modificadas
+    if (!payload.mhPassword || payload.mhPassword.trim() === "") {
+      delete payload.mhPassword;
+    }
+    if (!payload.certPassword || payload.certPassword.trim() === "") {
+      delete payload.certPassword;
+    }
+
+    const response = await axios.put(`${BASE_URL}/api/company`, payload, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+
     return response.data;
   } catch (error) {
     console.error("Error al actualizar la empresa:", error);

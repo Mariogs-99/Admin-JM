@@ -113,12 +113,12 @@ const App: React.FC = () => {
       url: 'usuarios',
     });
 
-    menuItems.push({
-      key: '9',
-      icon: <PiCalendarBlankLight size={20} />,
-      label: 'Integraciones OTA',
-      url: 'ota-integraciones',
-    });
+   // menuItems.push({
+   //   key: '9',
+   //   icon: <PiCalendarBlankLight size={20} />,
+   //   label: 'Integraciones OTA',
+   //   url: 'ota-integraciones',
+   // });
 
     menuItems.push({
       key: '10',

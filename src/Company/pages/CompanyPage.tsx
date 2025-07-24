@@ -24,6 +24,8 @@ interface MunicipioOption {
   departamento: string;
 }
 
+// ... (imports sin cambios)
+
 export const CompanyPage = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -84,7 +86,6 @@ export const CompanyPage = () => {
       <Card bordered={false}>
         <Form form={form} layout="vertical" onFinish={handleFinish}>
           <Row gutter={[24, 16]}>
-            {/* Campos extendidos */}
             <Col xs={24}>
               <Form.Item
                 label="Nombre del hotel"
@@ -212,6 +213,48 @@ export const CompanyPage = () => {
               </Form.Item>
             </Col>
 
+            {/* CAMPOS NUEVOS */}
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Código Establecimiento (MH)"
+                name="codEstableMh"
+                rules={[{ required: true, message: "Este campo es obligatorio" }]}
+              >
+                <Input size="large" placeholder="Ej. S006" maxLength={10} />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Código Establecimiento Interno"
+                name="codEstable"
+                rules={[{ required: true, message: "Este campo es obligatorio" }]}
+              >
+                <Input size="large" placeholder="Ej. S006" maxLength={10} />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Código Punto de Venta (MH)"
+                name="codPuntoVentaMh"
+                rules={[{ required: true, message: "Este campo es obligatorio" }]}
+              >
+                <Input size="large" placeholder="Ej. M201" maxLength={10} />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Código Punto de Venta Interno"
+                name="codPuntoVenta"
+                rules={[{ required: true, message: "Este campo es obligatorio" }]}
+              >
+                <Input size="large" placeholder="Ej. M201" maxLength={10} />
+              </Form.Item>
+            </Col>
+
+            {/* SWITCH DTE */}
             <Col xs={24}>
               <Divider />
               <Form.Item
@@ -222,6 +265,41 @@ export const CompanyPage = () => {
                 <Switch checkedChildren="Sí" unCheckedChildren="No" />
               </Form.Item>
             </Col>
+
+            <Col xs={24} sm={12}>
+            <Form.Item
+              label="Contraseña MH"
+              name="mhPassword"
+              tooltip="Contraseña para autenticación en Hacienda"
+              rules={[
+                {
+                  min: 6,
+                  message: "Debe tener al menos 6 caracteres",
+                },
+              ]}
+            >
+              <Input.Password size="large" placeholder="Contraseña MH" />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} sm={12}>
+            <Form.Item
+              label="Contraseña del Certificado"
+              name="certPassword"
+              tooltip="Contraseña asociada al certificado (.p12)"
+              rules={[
+                {
+                  min: 6,
+                  message: "Debe tener al menos 6 caracteres",
+                },
+              ]}
+            >
+              <Input.Password size="large" placeholder="Contraseña del certificado" />
+            </Form.Item>
+          </Col>
+
+
+            
           </Row>
 
           <div style={{ textAlign: "center", marginTop: "2rem" }}>
@@ -246,3 +324,4 @@ export const CompanyPage = () => {
     </div>
   );
 };
+
