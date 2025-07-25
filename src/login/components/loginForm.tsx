@@ -30,20 +30,21 @@ export const LoginForm = () => {
       console.log("📦 Mensaje del backend:", backendMessage);
       console.error("🔴 Error capturado:", error);
 
+      const lowerMessage = backendMessage?.toLowerCase?.() || "";
 
       if (
-        backendMessage.includes("inactiva") ||
-        backendMessage === "User inactive"
+        lowerMessage.includes("inactiva") ||
+        lowerMessage.includes("user inactive")
       ) {
         setFormError("Tu usuario ha sido desactivado. Contacta con administración.");
       } else if (
-        backendMessage.includes("credenciales") ||
-        backendMessage === "Invalid credentials"
+        lowerMessage.includes("credenciales") ||
+        lowerMessage.includes("invalid credentials")
       ) {
         setFormError("Usuario o contraseña incorrectos.");
       } else if (
-        backendMessage.includes("no encontrado") ||
-        backendMessage === "User not found"
+        lowerMessage.includes("no encontrado") ||
+        lowerMessage.includes("user not found")
       ) {
         setFormError("El usuario no existe.");
       } else {
