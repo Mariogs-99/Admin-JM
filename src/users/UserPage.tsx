@@ -20,7 +20,6 @@ const UserPage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  // 🔴 Nuevo estado para confirmación de eliminación
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
@@ -54,21 +53,21 @@ const UserPage = () => {
 
   const handleAdd = () => {
     setEditingUser(null);
+    form.resetFields(); // limpiar formulario anterior
     setModalVisible(true);
   };
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
+    form.resetFields(); // limpiar formulario anterior
     setModalVisible(true);
   };
 
-  // ✅ Mostrar modal personalizado al hacer clic en eliminar
   const handleDelete = (user: User) => {
     setUserToDelete(user);
     setConfirmVisible(true);
   };
 
-  // ✅ Confirmar eliminación
   const confirmDelete = async () => {
     if (!userToDelete) return;
     try {
@@ -93,11 +92,15 @@ const UserPage = () => {
         message.success("Usuario creado correctamente");
       }
       setModalVisible(false);
+      form.resetFields();
       loadUsers();
     } catch (error: any) {
       const backendMessage = error?.response?.data?.message;
 
-      if (backendMessage === "El nombre de usuario ya está en uso") {
+      if (
+        backendMessage?.toLowerCase().includes("usuario") &&
+        backendMessage?.toLowerCase().includes("existe")
+      ) {
         form.setFields([
           {
             name: "username",
@@ -112,8 +115,7 @@ const UserPage = () => {
 
   return (
     <>
-
-        <Title>Usuarios</Title>
+      <Title>Usuarios</Title>
       <Card
         extra={
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
@@ -125,7 +127,10 @@ const UserPage = () => {
         <UserTable data={users} onEdit={handleEdit} onDelete={handleDelete} />
         <UserFormModal
           visible={modalVisible}
-          onCancel={() => setModalVisible(false)}
+          onCancel={() => {
+            setModalVisible(false);
+            form.resetFields();
+          }}
           onSubmit={handleSave}
           initialData={editingUser}
           form={form}
@@ -133,24 +138,26 @@ const UserPage = () => {
         />
       </Card>
 
-      {/* ✅ Modal personalizado de confirmación */}
- <Modal
-  open={confirmVisible}
-  title="¿Eliminar usuario?"
-  onOk={confirmDelete}
-  onCancel={() => setConfirmVisible(false)}
-  okText="Sí"
-  cancelText="No"
-  okType="danger"
-  centered // 👈 Esto lo centra mejor verticalmente
-  destroyOnClose
->
-  <p>
-    ¿Estás seguro que deseas eliminar al usuario{" "}
-    <strong>{userToDelete?.firstname} {userToDelete?.lastname}</strong>?
-  </p>
-</Modal>
-
+      {/* Modal de confirmación */}
+      <Modal
+        open={confirmVisible}
+        title="¿Eliminar usuario?"
+        onOk={confirmDelete}
+        onCancel={() => setConfirmVisible(false)}
+        okText="Sí"
+        cancelText="No"
+        okType="danger"
+        centered
+        destroyOnClose
+      >
+        <p>
+          ¿Estás seguro que deseas eliminar al usuario{" "}
+          <strong>
+            {userToDelete?.firstname} {userToDelete?.lastname}
+          </strong>
+          ?
+        </p>
+      </Modal>
     </>
   );
 };

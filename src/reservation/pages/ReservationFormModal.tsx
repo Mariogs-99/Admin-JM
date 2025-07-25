@@ -260,15 +260,17 @@ export const ReservationFormModal: FC<ReservationFormModalProps> = ({
           <InputNumber size="large" min={1} style={{ width: "100%" }} />
         </Form.Item>
 
-        {initialData && (
+       {initialData && (
           <Form.Item label="Estado" name="status" rules={[{ required: true }]}> 
             <Select size="large">
               <Option value="FUTURA">FUTURA</Option>
               <Option value="ACTIVA">ACTIVA</Option>
               <Option value="FINALIZADA">FINALIZADA</Option>
+              <Option value="PENDIENTE">PENDIENTE</Option>
             </Select>
           </Form.Item>
         )}
+
 
         <Divider />
 

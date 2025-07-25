@@ -58,7 +58,6 @@ const App: React.FC = () => {
     loadUser();
   }, []);
 
-  // 🧩 WebSocket para notificaciones globales
   useEffect(() => {
     const socket = new SockJS(import.meta.env.VITE_WS_URL || "http://localhost:8080/ws-reservations");
 
@@ -95,47 +94,33 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const menuItems: MenuItem[] = [
+  // 🔹 Separación de ítems de menú
+  const userItems: MenuItem[] = [
     { key: '1', icon: <PiBuildingThin size={20} />, label: 'Hotel', url: 'hotel' },
-    { key: '2', icon: <PiBookBookmarkLight size={20} />, label: 'Reservaciones', url: 'reservaciones' },
-    { key: '3', icon: <PiBedLight size={20} />, label: 'Habitaciones', url: 'habitaciones' },
     { key: '4', icon: <PiBowlSteamLight size={20} />, label: 'Categorias', url: 'categorias' },
     { key: '5', icon: <PiCalendarBlankLight size={20} />, label: 'Eventos', url: 'eventos' },
     { key: '6', icon: <PiChampagneLight size={20} />, label: 'Experiencias', url: 'experiencias' },
     { key: '7', icon: <PiBowlSteamLight size={20} />, label: 'Restaurante', url: 'restaurante' },
   ];
 
+  const adminItems: MenuItem[] = [];
+
   if (role === "ADMIN") {
-    menuItems.push({
-      key: '8',
-      icon: <PiUsersThreeLight size={20} />,
-      label: 'Usuarios',
-      url: 'usuarios',
-    });
-
-   // menuItems.push({
-   //   key: '9',
-   //   icon: <PiCalendarBlankLight size={20} />,
-   //   label: 'Integraciones OTA',
-   //   url: 'ota-integraciones',
-   // });
-
-    menuItems.push({
-      key: '10',
-      icon: <PiBuildingThin size={20} />,
-      label: 'Configuración',
-      url: 'configuracion',
-    });
-
+    adminItems.push(
+      { key: '8', icon: <PiUsersThreeLight size={20} />, label: 'Usuarios', url: 'usuarios' },
+      { key: '10', icon: <PiBuildingThin size={20} />, label: 'Configuración', url: 'configuracion' },
+      { key: '2', icon: <PiBookBookmarkLight size={20} />, label: 'Reservaciones', url: 'reservaciones' },
+      { key: '3', icon: <PiBedLight size={20} />, label: 'Habitaciones', url: 'habitaciones' },
+    );
   }
+
+  const menuItems: MenuItem[] = [...adminItems, ...userItems];
 
   return (
     <ConfigProvider
       theme={{
         components: {
-          Menu: {
-            iconSize: 5
-          },
+          Menu: { iconSize: 5 },
         },
       }}
     >
@@ -145,12 +130,8 @@ const App: React.FC = () => {
             <img src={logo} alt="logo" className="w-[80%] mb-3" />
             {authUser && (
               <div className="text-center w-full">
-                <p className="text-[#DFDFDF] text-sm font-light leading-tight">
-                  Bienvenido/a
-                </p>
-                <p className="text-white text-sm font-medium truncate">
-                  {authUser}
-                </p>
+                <p className="text-[#DFDFDF] text-sm font-light leading-tight">Bienvenido/a</p>
+                <p className="text-white text-sm font-medium truncate">{authUser}</p>
               </div>
             )}
           </div>
